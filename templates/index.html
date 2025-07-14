@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Đăng ký lớp học realtime</title>
+</head>
+<body>
+    <h1>Danh sách lớp học</h1>
+    <ul>
+        {% for cls in classes %}
+            <li>
+                {{ cls[1] }} - Đã đăng ký: <span id="count-{{ cls[0] }}">{{ cls[3] }}</span>
+                <a href="{{ url_for('register', class_id=cls[0]) }}">Đăng ký</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('update_class', (data) => {
+            let countEl = document.getElementById('count-' + data.class_id);
+            if (countEl) {
+                countEl.textContent = parseInt(countEl.textContent) + 1;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h2>Chào, {{ user.full_name }} ({{ user.role }})</h2>
+    <p><a href="{{ url_for('logout') }}">Đăng xuất</a></p>
+</body>
+</html>

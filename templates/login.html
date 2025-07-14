@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Đăng nhập</title>
+</head>
+<body>
+    <h2>Đăng nhập</h2>
+    <form method="POST">
+        Email: <input type="email" name="email"><br>
+        Mật khẩu: <input type="password" name="password"><br>
+        <button type="submit">Đăng nhập</button>
+    </form>
+    <h2>Đăng ký tài khoản</h2>
+    <p><a href="/register">Chưa có tài khoản? Đăng ký</a></p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p style="color:red;">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+</body>
+</html>

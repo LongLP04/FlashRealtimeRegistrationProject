@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm Lớp Học</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="mb-4">Tạo Lớp Học Mới</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="course_id" class="form-label">Chọn khóa học</label>
+            <select class="form-select" name="course_id">
+                {% for course in courses %}
+                    <option value="{{ course[0] }}">{{ course[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="teacher_id" class="form-label">Chọn giảng viên</label>
+            <select class="form-select" name="teacher_id">
+                {% for teacher in teachers %}
+                    <option value="{{ teacher[0] }}">{{ teacher[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="room" class="form-label">Phòng học</label>
+            <input type="text" class="form-control" name="room">
+        </div>
+        <div class="mb-3">
+            <label for="capacity" class="form-label">Sĩ số tối đa</label>
+            <input type="number" class="form-control" name="capacity" min="1" required>
+        </div>
+        <button type="submit" class="btn btn-success">Tạo lớp học</button>
+    </form>
+    <a href="/dashboard" class="btn btn-secondary mt-3">Quay lại Dashboard</a>
+</div>
+</body>
+</html>
