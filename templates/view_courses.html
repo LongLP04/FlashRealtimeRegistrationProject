@@ -1,32 +1,132 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Danh sách khóa học</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Danh sách khóa học</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+    }
+
+    .sidebar {
+      width: 250px;
+      min-height: 100vh;
+      background: #343a40;
+      padding-top: 40px;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 24px;
+      color: #ddd;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #495057;
+      border-left: 4px solid #00c6a2;
+      color: #fff;
+    }
+
+    .sidebar .icon {
+      margin-right: 8px;
+    }
+
+    .logout-link {
+      color: #ffc9cc !important;
+    }
+
+    .logout-link:hover {
+      background: #721c24;
+      color: white !important;
+      border-left-color: #dc3545;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 40px;
+    }
+
+    h2 {
+      font-weight: bold;
+      margin-bottom: 32px;
+      color: #198754;
+    }
+
+    .table th {
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .description-cell {
+      text-align: left;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
-<body class="bg-light">
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">📘 Danh sách khóa học</h2>
-    <table class="table table-striped table-hover">
-        <thead class="table-success">
-            <tr>
-                <th>ID</th>
-                <th>Tên khóa học</th>
-                <th>Mô tả</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for course in courses %}
-            <tr>
-                <td>{{ course[0] }}</td>
-                <td>{{ course[1] }}</td>
-                <td>{{ course[2] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Quay lại Dashboard</a>
+<body>
+
+<!-- Sidebar cố định -->
+<div class="sidebar">
+  <a href="/dashboard">🏠 Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
+
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}" class="active"><span class="icon">📘</span>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
+
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
+
+<!-- Nội dung chính -->
+<div class="main-content">
+  <h2>📘 Danh sách khóa học</h2>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>Mã khóa học</th>
+          <th>Tên khóa học</th>
+          <th>Mô tả</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for course in courses %}
+        <tr>
+          <td>{{ course[0] }}</td>
+          <td>{{ course[1] }}</td>
+          <td class="description-cell">{{ course[2] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 </body>
 </html>
