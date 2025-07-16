@@ -1,24 +1,102 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">🎓 Xin chào, {{ user.full_name }} (ADMIN)</h2>
-    <div class="d-grid gap-3">
-        <a href="{{ url_for('add_course') }}" class="btn btn-outline-primary">➕ Thêm khóa học</a>
-        <a href="{{ url_for('add_class') }}" class="btn btn-outline-success">➕ Tạo lớp học</a>
-        <a href="{{ url_for('add_room') }}" class="btn btn-outline-info">➕ Thêm phòng học</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">🚪 Đăng xuất</a>
-        <a href="{{ url_for('view_rooms') }}" class="btn btn-outline-info">📂 Xem phòng học</a>
-        <a href="{{ url_for('view_courses') }}" class="btn btn-outline-success">📂 Xem khóa học</a>
-        <a href="{{ url_for('view_classes') }}" class="btn btn-outline-warning">📂 Xem lớp học</a>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+    }
 
-    </div>
+    .sidebar {
+      width: 250px;
+      min-height: 100vh;
+      background: #343a40;
+      padding-top: 40px;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar h4 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 24px;
+      color: #ddd;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #495057;
+      border-left: 4px solid #00c6a2;
+      color: #fff;
+    }
+
+    .sidebar a .icon {
+      margin-right: 8px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 40px;
+    }
+
+    .main-content h2 {
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    .logout-link {
+      color: #ffc9cc !important;
+    }
+
+    .logout-link:hover {
+      background: #721c24;
+      color: white !important;
+      border-left-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar trái -->
+<div class="sidebar">
+  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+
+  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
+
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
+
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
+
+<!-- Nội dung bên phải -->
+<div class="main-content">
+  <h2>📊 Bảng điều khiển quản trị</h2>
+  <p>Chọn một chức năng từ thanh bên trái để bắt đầu quản lý hệ thống.</p>
+
+  <!-- Sau này có thể thêm biểu đồ, số liệu, bảng thống kê ở đây -->
+</div>
+
 </body>
 </html>

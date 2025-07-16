@@ -1,31 +1,125 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Thêm phòng học</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Thêm Phòng Học</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+    }
+
+    .sidebar {
+      width: 250px;
+      min-height: 100vh;
+      background: #343a40;
+      padding-top: 40px;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 24px;
+      color: #ddd;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #495057;
+      border-left: 4px solid #00c6a2;
+      color: #fff;
+    }
+
+    .sidebar .icon {
+      margin-right: 8px;
+    }
+
+    .logout-link {
+      color: #ffc9cc !important;
+    }
+
+    .logout-link:hover {
+      background: #721c24;
+      color: white !important;
+      border-left-color: #dc3545;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 40px;
+    }
+
+    .main-content h2 {
+      font-weight: bold;
+      margin-bottom: 32px;
+      color: #28a745;
+    }
+
+    .form-label {
+      font-weight: 600;
+    }
+
+    .btn-success {
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+  </style>
 </head>
-<body class="bg-light">
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">🏫 Thêm phòng học</h2>
-    <form method="POST">
-        <div class="mb-3">
-            <label for="name" class="form-label">Tên phòng (VD: P101)</label>
-            <input type="text" class="form-control" id="name" name="name" required>
-        </div>
+<body>
 
-        <div class="mb-3">
-            <label for="status" class="form-label">Trạng thái phòng</label>
-            <select class="form-select" id="status" name="status" required>
-                <option value="available">Sẵn sàng</option>
-                <option value="occupied">Đang sử dụng</option>
-                <option value="maintenance">Bảo trì</option>
-            </select>
-        </div>
+<!-- Sidebar cố định -->
+<div class="sidebar">
+  <a href="/dashboard">🏠 Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}" class="active"><span class="icon">➕</span>Thêm phòng học</a>
 
-        <button type="submit" class="btn btn-success">Lưu phòng</button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Quay lại</a>
-    </form>
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
+
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
+
+<!-- Nội dung chính -->
+<div class="main-content">
+  <h2>🏫 Thêm Phòng Học</h2>
+  <form method="POST">
+    <div class="mb-3">
+      <label for="name" class="form-label">📌 Tên phòng (VD: P101)</label>
+      <input type="text" class="form-control" id="name" name="name" placeholder="Nhập tên phòng học..." required>
+    </div>
+
+    <div class="mb-3">
+      <label for="status" class="form-label">📋 Trạng thái phòng</label>
+      <select class="form-select" id="status" name="status" required>
+        <option value="available">Sẵn sàng</option>
+        <option value="occupied">Đang sử dụng</option>
+        <option value="maintenance">Bảo trì</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">✅ Lưu phòng</button>
+  </form>
+</div>
+
 </body>
 </html>

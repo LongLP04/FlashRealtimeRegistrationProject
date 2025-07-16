@@ -67,8 +67,7 @@ def dashboard():
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    return redirect(url_for('login'))
+     return redirect(url_for('register'))
 
 @app.route('/add-room', methods=['GET', 'POST'])
 @login_required

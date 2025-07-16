@@ -6,7 +6,7 @@ cursor = conn.cursor()
 cursor.execute("""
     INSERT INTO users (full_name, email, password, role)
     VALUES (?, ?, ?, ?)
-""", ("Admin Test", "admin@gmail.com", "Long123@", "admin"))
+""", ("Admin Test", "admin1@gmail.com", "TramAnh123@", "admin"))
 
 conn.commit()
 conn.close()
