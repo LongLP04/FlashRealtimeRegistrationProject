@@ -77,6 +77,7 @@
 
 <!-- Sidebar cố định -->
 <div class="sidebar">
+  
   <a href="/dashboard">🏠 Trang chính</a>
   <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}" class="active"><span class="icon">➕</span>Tạo lớp học</a>
@@ -88,6 +89,9 @@
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
 
+  <hr class="text-secondary mx-3">
+
+  <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
   <hr class="text-secondary mx-3">
 
   <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>

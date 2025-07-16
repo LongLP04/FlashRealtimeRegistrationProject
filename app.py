@@ -168,6 +168,17 @@ def view_classes():
     conn.close()
     return render_template('view_classes.html', classes=classes)
 
+@app.route('/view-users')
+@login_required
+def view_users():
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    users = cursor.execute("SELECT id, full_name, email, role FROM users").fetchall()
+    conn.close()
+    return render_template('view_users.html', users=users)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -176,11 +187,22 @@ def register():
         password = request.form['password']
         role = request.form['role']
 
+        #check role trước khi thêm vào dtb
+        if role == 'teacher':
+            flash ("Không thể đăng ký vai trò giảng viên, liên hệ Admin để được phân quyền.", "danger ")
+            return redirect(url_for('register'))
+
+
+        dob = request.form.get('dob')
+        phone = request.form.get('phone')
+        gender = request.form.get('gender')
+        cccd = request.form.get('cccd')
+
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
         try:
-            cursor.execute("INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-                           (full_name, email, password, role))
+            cursor.execute("INSERT INTO users (full_name, email, password, role, dob, phone, gender, cccd) VALUES (?, ?, ?, ?,?,?,?,?)",
+                           (full_name, email, password, role, dob, phone, gender, cccd))
             conn.commit()
             flash("Đăng ký thành công! Vui lòng đăng nhập.", "success")
             return redirect(url_for('login'))
@@ -190,6 +212,31 @@ def register():
             conn.close()
 
     return render_template('register.html')
+
+@app.route('/update-role/<int:id>', methods=['POST'])
+@login_required
+def update_role(id):
+    if current_user.role != 'admin':
+        return "Không có quyền thay đổi vai trò", 403
+
+    new_role = request.form['role']  # Lấy giá trị role từ form
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, id))
+        conn.commit()
+        flash("Cập nhật vai trò thành công!", "success")
+    except Exception as e:
+        conn.rollback()
+        flash(f"Lỗi khi cập nhật vai trò: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for('view_users'))  # Quay lại trang danh sách người dùng
+
+
 
 # Khởi tạo cơ sở dữ liệu
 
@@ -204,9 +251,14 @@ def init_db():
             full_name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'admin'))
+            role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
+            dob DATE,                
+            phone TEXT,             
+            gender TEXT CHECK (gender IN ('male', 'female', 'other')), 
+            cccd TEXT              
         )
     """)
+
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS courses (

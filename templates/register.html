@@ -90,6 +90,17 @@
     .toggle-link:hover {
       text-decoration: underline;
     }
+    /* Dòng thông báo lỗi */
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: -10px;
+      margin-bottom: 20px;
+    }
+
+    .disabled-option {
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -114,14 +125,34 @@
         <input type="text" name="full_name" placeholder="Họ và tên" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="password" placeholder="Mật khẩu" required>
-        <select name="role" required>
-          <option value="" disabled selected>Chọn vai trò</option>
-          <option value="student">Học viên</option>
-          <option value="teacher">Giảng viên</option>
+
+        <input type="date" name="dob" placeholder="Ngày tháng năm sinh" required>
+
+        <input type="text" name="phone" placeholder="Số điện thoại" required>
+
+        <select name="gender" required>
+          <option value="" disabled selected>Chọn giới tính</option>
+          <option value="male">Nam</option>
+          <option value="female">Nữ</option>
+          <option value="other">Khác</option>
         </select>
+
+        <input type="text" name="cccd" placeholder="Số CCCD" required>
+
+        <select name="role" id="role" required>
+          <option value="" disabled>Chọn vai trò</option>
+          <option value="student" selected>Học viên</option>
+          <option value="teacher" class="disabled-option">Giảng viên (Liên hệ admin để được phân quyền)</option>
+        </select>
+
+        <div id="error-message" class="error-message" style="display:none;">
+          Chọn "Giảng viên" không được phép, vui lòng liên hệ admin để được phân quyền.
+        </div>
+
         <button type="submit">Đăng ký</button>
         <div class="toggle-link" onclick="switchForm('login')">Đã có tài khoản? Đăng nhập</div>
       </form>
+
     </div>
   </div>
 </div>
@@ -135,6 +166,18 @@
       slider.style.transform = "translateX(0%)";
     }
   }
+  // check role
+  document.getElementById("role").addEventListener("change", function() {
+    var role = this.value;
+    var errorMessage = document.getElementById("error-message");
+
+    if (role === "teacher") {
+      errorMessage.style.display = "block"; 
+      this.value = "student"; 
+    } else {
+      errorMessage.style.display = "none";  
+    }
+  });
 </script>
 
 </body>
