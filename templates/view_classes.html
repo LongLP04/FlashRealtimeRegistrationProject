@@ -29,7 +29,11 @@
       border-left: 4px solid transparent;
       transition: all 0.2s ease-in-out;
     }
-
+    .sidebar h4 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+    }
     .sidebar a:hover,
     .sidebar a.active {
       background: #495057;
@@ -79,24 +83,36 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
+  {%if user.role == 'admin' %}
+    <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  {% elif user.role == 'teacher' %}
+    <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
+  {% else %}
+    <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
+  {% endif %}
   <a href="/dashboard">🏠 Trang chính</a>
-  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
-  <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
-  <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
 
-  <hr class="text-secondary mx-3">
+  {% if user.role == 'admin' %}
+    <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
+    <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
+    <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
+
+    <hr class="text-secondary mx-3">
+  {% endif %}
 
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}" class="active"><span class="icon">📂</span>Xem lớp học</a>
 
-  <hr class="text-secondary mx-3">
+  {% if user.role == 'admin' %}
+    <hr class="text-secondary mx-3">
+    <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
+  {% endif %}
 
-  <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
+
 
 <!-- Main content -->
 <div class="main-content">

@@ -45,29 +45,30 @@ def login():
 
         if user:
             login_user(User(*user))
-            flash("Đăng nhập thành công!", "success")
+            
             return redirect(url_for('dashboard'))
         else:
             flash("Sai tài khoản hoặc mật khẩu!", "danger")
-    return render_template('login.html')
+    return render_template('auth/login.html')
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
     role = current_user.role
     if role == 'admin':
-        return render_template('admin.html', user=current_user)
+        return render_template('admin/admin.html', user=current_user)
     elif role == 'teacher':
-        return render_template('teacher.html', user=current_user)
+        return render_template('teacher/teacher.html', user=current_user)
     elif role == 'student':
-        return render_template('student.html', user=current_user)
+        return render_template('student/student.html', user=current_user)
     else:
         return "Vai trò không xác định", 403
 
 @app.route('/logout')
 @login_required
 def logout():
-     return redirect(url_for('register'))
+     flash("Đăng xuất thành công!", "success")
+     return redirect(url_for('login'))
 
 @app.route('/add-room', methods=['GET', 'POST'])
 @login_required
@@ -84,7 +85,7 @@ def add_room():
         conn.close()
         flash("Đã thêm phòng học thành công!", "success")
         return redirect(url_for('dashboard'))
-    return render_template('add_room.html')
+    return render_template('admin/add_room.html')
 
 @app.route('/view-rooms')
 @login_required
@@ -93,7 +94,7 @@ def view_rooms():
     cursor = conn.cursor()
     rooms = cursor.execute("SELECT * FROM rooms").fetchall()
     conn.close()
-    return render_template('view_rooms.html', rooms=rooms)
+    return render_template('view_rooms.html', rooms=rooms, user =current_user)
 
 @app.route('/add-course', methods=['GET', 'POST'])
 @login_required
@@ -110,7 +111,7 @@ def add_course():
         conn.close()
         flash("Đã thêm khóa học!", "success")
         return redirect(url_for('dashboard'))
-    return render_template('add_course.html')
+    return render_template('admin/add_course.html')
 
 @app.route('/view-courses')
 @login_required
@@ -119,7 +120,7 @@ def view_courses():
     cursor = conn.cursor()
     courses = cursor.execute("SELECT * FROM courses").fetchall()
     conn.close()
-    return render_template('view_courses.html', courses=courses)
+    return render_template('view_courses.html', courses=courses, user =current_user)
 
 @app.route('/add-class', methods=['GET', 'POST'])
 @login_required
@@ -150,7 +151,7 @@ def add_class():
         return redirect(url_for('dashboard'))
 
     conn.close()
-    return render_template('add_class.html', courses=courses, teachers=teachers, rooms=rooms)
+    return render_template('admin/add_class.html', courses=courses, teachers=teachers, rooms=rooms)
 
 @app.route('/view-classes')
 @login_required
@@ -166,7 +167,7 @@ def view_classes():
     """
     classes = cursor.execute(query).fetchall()
     conn.close()
-    return render_template('view_classes.html', classes=classes)
+    return render_template('view_classes.html', classes=classes, user = current_user)
 
 @app.route('/view-users')
 @login_required
@@ -177,7 +178,7 @@ def view_users():
     cursor = conn.cursor()
     users = cursor.execute("SELECT id, full_name, email, role FROM users").fetchall()
     conn.close()
-    return render_template('view_users.html', users=users)
+    return render_template('admin/view_users.html', users=users)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -211,7 +212,7 @@ def register():
         finally:
             conn.close()
 
-    return render_template('register.html', switch_to_login=False)
+    return render_template('auth/register.html', switch_to_login=False)
 
 @app.route('/update-role/<int:id>', methods=['POST'])
 @login_required
@@ -234,7 +235,7 @@ def update_role(id):
     finally:
         conn.close()
 
-    return redirect(url_for('view_users'))  # Quay lại trang danh sách người dùng
+    return redirect(url_for('admin/view_users'))  # Quay lại trang danh sách người dùng
 
 
 
@@ -315,6 +316,34 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/teacher-schedule')
+@login_required
+def teacher_schedule():
+    if current_user.role != 'teacher':
+        return "Không có quyền truy cập", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    query = """
+        SELECT c.id, co.name, s.day_of_week, s.start_time, s.end_time, r.name
+        FROM classes c
+        JOIN courses co ON c.course_id = co.id
+        JOIN schedules s ON s.class_id = c.id
+        JOIN rooms r ON c.room_id = r.id
+        WHERE c.teacher_id = ?
+        ORDER BY s.day_of_week, s.start_time
+    """
+    result = cursor.execute(query, (current_user.id,)).fetchall()
+    conn.close()
+
+    return render_template('teacher/teacher_schedule.html', schedule=result)
+
 
 # Chạy app
 if __name__ == '__main__':

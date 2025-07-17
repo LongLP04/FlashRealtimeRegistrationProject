@@ -92,10 +92,26 @@
   <form method="POST" action="/login">
     <h2>Đăng nhập</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="error-message">{{ message }}</div>
-      {% endfor %}
+    <!-- thongbao -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <div class="error-message" role="alert" id="flash-message">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+      // Ẩn thông báo sau 1 giây (1000ms)
+      setTimeout(function() {
+        var flashMessage = document.getElementById("flash-message");
+        if (flashMessage) {
+          flashMessage.style.display = 'none';
+        }
+      }, 2000);
+    </script>
+    {% endif %}
     {% endwith %}
 
     <input type="email" name="email" placeholder="Email" required>
