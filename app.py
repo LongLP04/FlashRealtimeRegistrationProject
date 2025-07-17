@@ -211,7 +211,7 @@ def register():
         finally:
             conn.close()
 
-    return render_template('register.html')
+    return render_template('register.html', switch_to_login=False)
 
 @app.route('/update-role/<int:id>', methods=['POST'])
 @login_required

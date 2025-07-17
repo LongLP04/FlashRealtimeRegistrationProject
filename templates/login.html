@@ -1,22 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Đăng nhập</title>
+  <meta charset="UTF-8">
+  <title>Đăng nhập</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+    animation: slideIn 0.5s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #007BFF, #00c6a2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .wrapper {
+      width: 400px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      padding: 40px 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #007BFF;
+      margin-bottom: 24px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input {
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #00c6a2;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 16px;
+      color: #007BFF;
+      cursor: pointer;
+    }
+
+    .toggle-link:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
+
+<div class="wrapper">
+  <form method="POST" action="/login">
     <h2>Đăng nhập</h2>
-    <form method="POST">
-        Email: <input type="email" name="email"><br>
-        Mật khẩu: <input type="password" name="password"><br>
-        <button type="submit">Đăng nhập</button>
-    </form>
-    <h2>Đăng ký tài khoản</h2>
-    <p><a href="/register">Chưa có tài khoản? Đăng ký</a></p>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <p style="color:red;">{{ message }}</p>
+        <div class="error-message">{{ message }}</div>
       {% endfor %}
     {% endwith %}
+
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Mật khẩu" required>
+
+    <button type="submit">Đăng nhập</button>
+    <div class="toggle-link" onclick="window.location.href='/register'">Chưa có tài khoản? Đăng ký</div>
+  </form>
+</div>
+
 </body>
 </html>
-<style></style>

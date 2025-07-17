@@ -2,13 +2,23 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Đăng nhập / Đăng ký</title>
+  <title>Đăng ký</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
+    body {
+    animation: slideIn 0.5s ease-in-out;
     }
 
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
@@ -21,33 +31,16 @@
 
     .wrapper {
       width: 420px;
-      height: auto;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-      overflow: hidden;
-      position: relative;
-    }
-
-    .slider {
-      display: flex;
-      width: 200%;
-      transition: transform 0.5s ease-in-out;
-    }
-
-    .form-box {
-      width: 50%;
       padding: 40px 30px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
 
     h2 {
       text-align: center;
       color: #007BFF;
       margin-bottom: 24px;
-      font-size: 24px;
     }
 
     form {
@@ -72,11 +65,6 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: #009f88;
     }
 
     .toggle-link {
@@ -84,13 +72,12 @@
       margin-top: 16px;
       color: #007BFF;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .toggle-link:hover {
       text-decoration: underline;
     }
-    /* Dòng thông báo lỗi */
+
     .error-message {
       color: red;
       font-size: 14px;
@@ -106,78 +93,64 @@
 <body>
 
 <div class="wrapper">
-  <div class="slider" id="form-slider">
-    <!-- Đăng nhập -->
-    <div class="form-box">
-      <form method="POST" action="/login">
-        <h2>Đăng nhập</h2>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Mật khẩu" required>
-        <button type="submit">Đăng nhập</button>
-        <div class="toggle-link" onclick="switchForm('register')">Chưa có tài khoản? Đăng ký</div>
-      </form>
+  <form method="POST" action="/register">
+    <h2>Đăng ký tài khoản</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="error-message">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <input type="text" name="full_name" placeholder="Họ và tên" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Mật khẩu" required>
+    <input type="date" name="dob" placeholder="Ngày sinh" required>
+    <input type="text" name="phone" placeholder="Số điện thoại" required>
+
+    <select name="gender" required>
+      <option value="" disabled selected>Chọn giới tính</option>
+      <option value="male">Nam</option>
+      <option value="female">Nữ</option>
+      <option value="other">Khác</option>
+    </select>
+
+    <input type="text" name="cccd" placeholder="Số CCCD" required>
+
+    <select name="role" id="role" required>
+      <option value="" disabled>Chọn vai trò</option>
+      <option value="student" selected>Học viên</option>
+      <option value="teacher" class="disabled-option">Giảng viên (Liên hệ admin để được phân quyền)</option>
+    </select>
+
+    <div id="error-message" class="error-message" style="display:none;">
+      Chọn "Giảng viên" không được phép, vui lòng liên hệ admin để được phân quyền.
     </div>
 
-    <!-- Đăng ký -->
-    <div class="form-box">
-      <form method="POST" action="/register">
-        <h2>Đăng ký tài khoản</h2>
-        <input type="text" name="full_name" placeholder="Họ và tên" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Mật khẩu" required>
-
-        <input type="date" name="dob" placeholder="Ngày tháng năm sinh" required>
-
-        <input type="text" name="phone" placeholder="Số điện thoại" required>
-
-        <select name="gender" required>
-          <option value="" disabled selected>Chọn giới tính</option>
-          <option value="male">Nam</option>
-          <option value="female">Nữ</option>
-          <option value="other">Khác</option>
-        </select>
-
-        <input type="text" name="cccd" placeholder="Số CCCD" required>
-
-        <select name="role" id="role" required>
-          <option value="" disabled>Chọn vai trò</option>
-          <option value="student" selected>Học viên</option>
-          <option value="teacher" class="disabled-option">Giảng viên (Liên hệ admin để được phân quyền)</option>
-        </select>
-
-        <div id="error-message" class="error-message" style="display:none;">
-          Chọn "Giảng viên" không được phép, vui lòng liên hệ admin để được phân quyền.
-        </div>
-
-        <button type="submit">Đăng ký</button>
-        <div class="toggle-link" onclick="switchForm('login')">Đã có tài khoản? Đăng nhập</div>
-      </form>
-
-    </div>
-  </div>
+    <button type="submit">Đăng ký</button>
+    <div class="toggle-link" onclick="window.location.href='/login'">Đã có tài khoản? Đăng nhập</div>
+  </form>
 </div>
 
 <script>
-  function switchForm(formType) {
-    const slider = document.getElementById("form-slider");
-    if (formType === 'register') {
-      slider.style.transform = "translateX(-50%)";
-    } else {
-      slider.style.transform = "translateX(0%)";
-    }
-  }
-  // check role
-  document.getElementById("role").addEventListener("change", function() {
+  document.getElementById("role").addEventListener("change", function () {
     var role = this.value;
     var errorMessage = document.getElementById("error-message");
 
     if (role === "teacher") {
-      errorMessage.style.display = "block"; 
-      this.value = "student"; 
+      errorMessage.style.display = "block";
+      this.value = "student";
     } else {
-      errorMessage.style.display = "none";  
+      errorMessage.style.display = "none";
     }
   });
+  const switchToLogin = "{{ 'true' if switch_to_login else 'false' }}";
+
+  if (switchToLogin) {
+    window.onload = function() {
+      switchForm('login');
+    };
+  }
 </script>
 
 </body>
