@@ -344,6 +344,62 @@ def teacher_schedule():
 
     return render_template('teacher/teacher_schedule.html', schedule=result)
 
+@app.route('/register_course', methods=['POST'])
+@login_required
+def register_course():
+    if session['role'] != 'student':
+        flash("Chỉ sinh viên mới được đăng ký khóa học", "danger")
+        return redirect(url_for('view_courses'))
+
+    course_id = request.form.get('course_id')
+    student_id = session['user_id']  # hoặc 'username', tùy cách bạn lưu
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Kiểm tra nếu đã đăng ký trước đó
+    cursor.execute("SELECT * FROM course_registrations WHERE student_id = ? AND course_id = ?", (student_id, course_id))
+    if cursor.fetchone():
+        flash("Bạn đã đăng ký khóa học này rồi", "warning")
+    else:
+        cursor.execute("INSERT INTO course_registrations (student_id, course_id) VALUES (?, ?)", (student_id, course_id))
+        conn.commit()
+        flash("Đăng ký khóa học thành công!", "success")
+
+    conn.close()
+    return redirect(url_for('view_courses'))
+
+
+
+@app.route('/update_info', methods=['GET', 'POST'])
+@login_required
+def update_info():
+    user = current_user
+    if request.method == 'POST':
+        full_name = request.form['full_name']
+        phone = request.form['phone']
+        current_pw = request.form['current_password']
+        new_pw = request.form['new_password']
+        confirm_pw = request.form['confirm_password']
+
+        # Cập nhật thông tin cá nhân
+        user.full_name = full_name
+        user.phone = phone
+
+        # Nếu muốn đổi mật khẩu
+        if current_pw and new_pw and confirm_pw:
+            if not check_password_hash(user.password, current_pw):
+                return render_template("student/information.html", user=user, error_message="Sai mật khẩu hiện tại")
+            if new_pw != confirm_pw:
+                return render_template("student/information.html", user=user, error_message="Mật khẩu mới không khớp")
+            user.password = generate_password_hash(new_pw)
+
+        db.session.commit()
+        return render_template("information.html", user=user, success_message="Cập nhật thành công")
+
+    return render_template("information.html", user=user)
+
+
 
 # Chạy app
 if __name__ == '__main__':

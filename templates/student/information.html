@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin cá nhân</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            padding: 30px;
+            padding-bottom: 80px; /* để không che form */
+        }
+
+        .header-bar {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .form-wrapper {
+            background-color: white;
+            padding: 30px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h5.section-title {
+            margin-top: 30px;
+            font-weight: 600;
+            color: #0d6efd;
+        }
+
+        .fixed-bottom-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .btn-dashboard {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn-dashboard:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h5 class="mb-0">👤 Thông tin cá nhân</h5>
+               
+    </div>
+
+    <div class="form-wrapper">
+        <form method="POST" action="/update_info">
+            {% if success_message %}
+                <div class="alert alert-success">{{ success_message }}</div>
+            {% endif %}
+            {% if error_message %}
+                <div class="alert alert-danger">{{ error_message }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="full_name" class="form-label">Họ và tên</label>
+                <input type="text" class="form-control" id="full_name" name="full_name"
+                       value="{{ user.full_name }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email"
+                       value="{{ user.email }}" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Số điện thoại</label>
+                <input type="text" class="form-control" id="phone" name="phone"
+                       value="{{ user.phone }}">
+            </div>
+
+            <h5 class="section-title">🔐 Đổi mật khẩu</h5>
+
+            <div class="mb-3">
+                <label for="current_password" class="form-label">Mật khẩu hiện tại</label>
+            <div class="input-group">
+                <input type="password" class="form-control" id="current_password" name="current_password">
+                <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                    <i class="bi bi-eye-slash" id="eyeIcon"></i>
+                </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="new_password" class="form-label">Mật khẩu mới</label>
+                <input type="password" class="form-control" id="new_password" name="new_password">
+            </div>
+
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Xác nhận mật khẩu mới</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
+            </div>
+             <a href="/dashboard" class="btn-dashboard">← Quay lại Dashboard</a>
+        </form>
+        
+    </div>
+
+<script>
+    const toggleBtn = document.getElementById('toggleCurrentPassword');
+    const passwordInput = document.getElementById('current_password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    toggleBtn.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        eyeIcon.classList.toggle('bi-eye');
+        eyeIcon.classList.toggle('bi-eye-slash');
+    });
+</script>
+
+</body>
+</html>

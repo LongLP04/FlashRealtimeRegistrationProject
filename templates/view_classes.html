@@ -80,15 +80,13 @@
   </style>
 </head>
 <body>
-
+{% if user.role != 'student' %}
 <!-- Sidebar -->
 <div class="sidebar">
-  {%if user.role == 'admin' %}
+  {% if user.role == 'admin' %}
     <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
   {% elif user.role == 'teacher' %}
     <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
-  {% else %}
-    <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
   {% endif %}
   <a href="/dashboard">🏠 Trang chính</a>
 
@@ -96,13 +94,12 @@
     <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
     <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
     <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
-
     <hr class="text-secondary mx-3">
   {% endif %}
 
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}" class="active"><span class="icon">📂</span>Xem lớp học</a>
+  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
 
   {% if user.role == 'admin' %}
     <hr class="text-secondary mx-3">
@@ -112,10 +109,11 @@
   <hr class="text-secondary mx-3">
   <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
+{% endif %}
 
 
 <!-- Main content -->
-<div class="main-content">
+<<div class="main-content" style="{% if user.role == 'student' %}margin-left: 0;{% else %}margin-left: 250px;{% endif %}">
   <h2>📋 Danh sách lớp học</h2>
 
   <div class="table-responsive">
@@ -127,21 +125,44 @@
           <th scope="col">Giáo viên</th>
           <th scope="col">Phòng học</th>
           <th scope="col">Sĩ số tối đa</th>
-          <th scope="col">Đã đăng ký</th>
+          <th scope="col">Số lượng học viên đăng ký</th>
+          {% if user.role == 'student' %}
+          <th scope="col">Trạng thái</th>
+          <th scope="col">Hành động</th>
+      {% endif %}
         </tr>
       </thead>
       <tbody class="text-center">
-        {% for c in classes %}
-        <tr>
-          <td>{{ c[0] }}</td>
-          <td>{{ c[1] }}</td>
-          <td>{{ c[2] }}</td>
-          <td>{{ c[3] }}</td>
-          <td>{{ c[4] }}</td>
-          <td>{{ c[5] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+  {% for c in classes %}
+  <tr>
+    <td>{{ c[0] }}</td>
+    <td>{{ c[1] }}</td>
+    <td>{{ c[2] }}</td>
+    <td>{{ c[3] }}</td>
+    <td>{{ c[4] }}</td>
+    <td>{{ c[5] }}</td>
+
+    {% if user.role == 'student' %}
+      <td>
+        {% if c[6] %}
+          ✅ Đã đăng ký
+        {% else %}
+          ❌ Chưa đăng ký
+        {% endif %}
+      </td>
+      <td>
+        {% if not c[6] %}
+          <form method="post" action="{{ url_for('register_class', class_id=c[0]) }}">
+            <button type="submit" class="btn btn-success btn-sm">Đăng ký</button>
+          </form>
+        {% else %}
+          <button class="btn btn-secondary btn-sm" disabled>Đã đăng ký</button>
+        {% endif %}
+      </td>
+    {% endif %}
+  </tr>
+  {% endfor %}
+</tbody>
     </table>
   </div>
 </div>

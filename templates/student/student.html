@@ -1,20 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Student Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Trang học viên</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+    }
+
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background-color: #343a40;
+      padding-top: 40px;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar h4 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 24px;
+      color: #e0f0ff;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      padding: 40px;
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    h2 {
+      color: #0d6efd;
+      font-weight: 700;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-icon {
+      font-size: 28px;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .btn-warning {
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4">Student Dashboard</h1>
-    <div class="card">
-        <div class="card-header bg-warning text-white">Lớp học đã đăng ký</div>
-        <div class="card-body">
-            <p>Xem danh sách lớp học đã tham gia và lịch học.</p>
-            <a href="#" class="btn btn-warning">Xem chi tiết</a>
-        </div>
-    </div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <h4>👋 Xin chào, {{ user.full_name }}</h4>
+  <a href="#"><span class="dashboard-icon">📚</span>Lớp đã đăng ký</a>
+  <a href="#"><span class="dashboard-icon">📅</span>Lịch học</a>
+  <a href="{{ url_for('view_courses') }}"><span class="dashboard-icon">🎓</span>Khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><span class="dashboard-icon">📂</span>Lớp học</a>
+  <a href="{{url_for('update_info')}}"><span class="dashboard-icon">⚙️</span>Cài đặt tài khoản</a>
+  <hr class="text-light mx-3">
+  <a href="{{ url_for('logout') }}"><span class="dashboard-icon">🚪</span>Đăng xuất</a>
 </div>
+
+<!-- Main content -->
+<div class="main-content">
+  <h2>🎒 Bảng điều khiển học viên</h2>
+
+  <!-- <div class="row g-4">
+
+   <div class="col-md-6">
+      <div class="card border-warning">
+        <div class="card-header bg-warning text-white">
+          📘 Lớp học đã đăng ký
+        </div>
+        <div class="card-body">
+          <p>Xem danh sách lớp học bạn đang tham gia và lịch học tương ứng.</p>
+          <a href="#" class="btn btn-warning">Xem chi tiết</a>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Lịch học
+    <div class="col-md-6">
+      <div class="card border-info">
+        <div class="card-header bg-info text-white">
+          📆 Lịch học
+        </div>
+        <div class="card-body">
+          <p>Kiểm tra thời gian học trong tuần và các buổi sắp tới.</p>
+          <a href="#" class="btn btn-info text-white">Xem lịch</a>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Khóa học -->
+    <div class="col-md-6">
+      <div class="card border-success">
+        <div class="card-header bg-success text-white">
+          🎓 Khóa học đang theo học
+        </div>
+        <div class="card-body">
+          <p>Thông tin chi tiết về các khóa học bạn đã đăng ký.</p>
+          <a href="#" class="btn btn-success">Xem chi tiết</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
