@@ -108,17 +108,32 @@ def view_rooms():
 @login_required
 def delete_room(room_id):
     if current_user.role != 'admin':
-        return 'Không có quyền truy câp', 403
+        return 'Không có quyền truy cập', 403
+
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
+
     try:
-        cursor.execute("DELETE FROM rooms WHERE id = ?", (room_id,))
-        conn.commit()
-        flash("Đã xóa phòng học thành công!", "success")
+        # Kiểm tra xem phòng có đang được sử dụng trong lớp học nào không
+        cursor.execute("SELECT COUNT(*) FROM classes WHERE room_id = ?", (room_id,))
+        count = cursor.fetchone()[0]
+
+        if count > 0:
+            flash("Không thể xóa: Phòng này đang được sử dụng trong lớp học!", "warning")
+        else:
+            cursor.execute("DELETE FROM rooms WHERE id = ?", (room_id,))
+            conn.commit()
+            flash("Đã xóa phòng học thành công!", "success")
+
     except sqlite3.Error as e:
         conn.rollback()
         flash(f"Lỗi khi xóa phòng học: {str(e)}", "danger")
+
+    finally:
+        conn.close()
+
     return redirect(url_for('view_rooms'))
+
 @app.route('/edit-room/<int:room_id>', methods=['POST', 'GET'])
 @login_required
 def edit_room(room_id):
@@ -171,7 +186,60 @@ def view_courses():
     courses = cursor.execute("SELECT * FROM courses").fetchall()
     conn.close()
     return render_template('view_courses.html', courses=courses, user =current_user)
+@app.route('/delete-course/<int:course_id>', methods=['POST'])
+@login_required
+def delete_course(course_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
 
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        # Kiểm tra xem khóa học có được sử dụng trong lớp học không
+        cursor.execute("SELECT COUNT(*) FROM classes WHERE course_id = ?", (course_id,))
+        count = cursor.fetchone()[0]
+
+        if count > 0:
+            flash("Không thể xóa khóa học vì đang được sử dụng trong các lớp học!", "warning")
+        else:
+            cursor.execute("DELETE FROM courses WHERE id = ?", (course_id,))
+            conn.commit()
+            flash("Đã xóa khóa học thành công!", "success")
+
+    except sqlite3.Error as e:
+        conn.rollback()
+        flash(f"Lỗi khi xóa khóa học: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for('view_courses'))
+
+@app.route('/edit-course/<int:course_id>', methods=['POST', 'GET'])
+@login_required 
+def edit_course(course_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        cursor.execute('UPDATE courses SET name = ?, description = ? WHERE id = ?', (name, description, course_id))
+        conn.commit()
+        conn.close()
+        flash("Đã cập nhật khóa học thành công!", "success")
+        return redirect(url_for('view_courses'))
+    else:
+        cursor.execute("SELECT * FROM courses WHERE id = ?", (course_id,))
+        course = cursor.fetchone()
+        conn.close()
+        if course:
+            return render_template('admin/edit_course.html', course=course, user=current_user)
+        else:
+            flash("Khóa học không tồn tại!", "danger")
+            return redirect(url_for('view_courses'))
+    
 
 
 # Thêm lớp học, xem danh sách lớp học
@@ -236,6 +304,80 @@ def view_classes():
     conn.close()
     return render_template('view_classes.html', classes=classes, user = current_user)
 
+@app.route('/edit-class/<int:class_id>', methods=['GET', 'POST'])
+@login_required
+def edit_class(class_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Lấy danh sách khóa học, giảng viên, và phòng
+    courses = cursor.execute("SELECT id, name FROM courses").fetchall()
+    teachers = cursor.execute("SELECT id, full_name FROM users WHERE role = 'teacher'").fetchall()
+    rooms = cursor.execute("SELECT id, name FROM rooms").fetchall()
+
+    # Lấy thông tin lớp cần sửa
+    cursor.execute("SELECT course_id, teacher_id, room_id, capacity FROM classes WHERE id = ?", (class_id,))
+    class_data = cursor.fetchone()
+
+    if not class_data:
+        conn.close()
+        flash("Lớp học không tồn tại.", "danger")
+        return redirect(url_for('view_classes'))
+
+    if request.method == 'POST':
+        new_course_id = request.form['course_id']
+        new_teacher_id = request.form['teacher_id']
+        new_room_id = request.form['room_id']
+        new_capacity = request.form['capacity']
+
+        try:
+            cursor.execute("""
+                UPDATE classes
+                SET course_id = ?, teacher_id = ?, room_id = ?, capacity = ?
+                WHERE id = ?
+            """, (new_course_id, new_teacher_id, new_room_id, new_capacity, class_id))
+
+            conn.commit()
+            flash("Cập nhật lớp học thành công!", "success")
+            return redirect(url_for('view_classes'))
+        except sqlite3.Error as e:
+            conn.rollback()
+            flash(f"Lỗi khi cập nhật: {str(e)}", "danger")
+
+    conn.close()
+    return render_template('admin/edit_class.html', class_id=class_id,
+                           class_data=class_data, courses=courses,
+                           teachers=teachers, rooms=rooms, user=current_user)
+@app.route('/delete-class/<int:class_id>', methods=['POST'])
+@login_required
+def delete_class(class_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        # Kiểm tra xem lớp đã có học viên đăng ký chưa
+        cursor.execute("SELECT COUNT(*) FROM registrations WHERE class_id = ?", (class_id,))
+        registration_count = cursor.fetchone()[0]
+
+        if registration_count > 0:
+            flash("Không thể xóa lớp học vì đã có học viên đăng ký.", "warning")
+        else:
+            cursor.execute("DELETE FROM classes WHERE id = ?", (class_id,))
+            conn.commit()
+            flash("Đã xóa lớp học thành công!", "success")
+    except sqlite3.Error as e:
+        conn.rollback()
+        flash(f"Lỗi khi xóa lớp học: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+    return redirect(url_for('view_classes'))
 
 
 # Xem danh sách người dùng

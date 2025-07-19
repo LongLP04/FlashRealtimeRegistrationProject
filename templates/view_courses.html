@@ -122,6 +122,28 @@
 
 <!-- Nội dung chính -->
 <div class="main-content">
+  <!-- Hiển thị flash  -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-3">
+        {% for category, message in messages %}
+          <div id="flash-message" class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+      <script>
+      // Ẩn thông báo sau 1 giây (1000ms)
+      setTimeout(function() {
+        var flashMessage = document.getElementById("flash-message");
+        if (flashMessage) {
+          flashMessage.style.display = 'none';
+        }
+      }, 2000);
+    </script>
+    {% endif %}
+  {% endwith %}
   <h2>📘 Danh sách khóa học</h2>
 
   <div class="table-responsive">
@@ -131,6 +153,9 @@
           <th>Mã khóa học</th>
           <th>Tên khóa học</th>
           <th>Mô tả</th>
+          {% if user.role == 'admin' %}
+          <th>Hành động</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -139,6 +164,14 @@
           <td>{{ course[0] }}</td>
           <td>{{ course[1] }}</td>
           <td class="description-cell">{{ course[2] }}</td>
+          {% if user.role == 'admin' %}
+          <td>
+            <a href="{{ url_for('edit_course', course_id=course[0]) }}" class="btn btn-warning btn-sm">Sửa</a>
+            <form method="POST" action="{{ url_for('delete_course', course_id=course[0]) }}" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa khóa học này?');">Xóa</button>
+            </form>
+          </td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>

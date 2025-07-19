@@ -131,6 +131,30 @@
 
 <!-- Nội dung chính -->
 <div class="main-content">
+
+  <!-- Hiển thị flash  -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-3">
+        {% for category, message in messages %}
+          <div id="flash-message" class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+      <script>
+      // Ẩn thông báo sau 1 giây (1000ms)
+      setTimeout(function() {
+        var flashMessage = document.getElementById("flash-message");
+        if (flashMessage) {
+          flashMessage.style.display = 'none';
+        }
+      }, 2000);
+    </script>
+    {% endif %}
+  {% endwith %}
+
   <h2>🏫 Danh sách phòng học</h2>
 
   <div class="table-responsive">
@@ -141,8 +165,10 @@
           <th>Tên phòng</th>
           <th>Trạng thái</th>
           <th>Môn học hiện hành</th>
+          {% if user.role == 'admin' %}
           <th>Giảng viên phụ trách</th>
           <th>Hành động</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -168,6 +194,7 @@
               <span class="text-muted">Không có môn học</span>
             {% endif %}
           </td>
+          {% if user.role == 'admin' %}
           <td>
             {% if room[4] %}
               {{ room[4] }}
@@ -176,11 +203,26 @@
             {% endif %}
           </td>
           <th>
-            
-            <a href="{{ url_for('edit_room', room_id=room[0]) }}" class="btn btn-sm btn-primary">Sửa</a>
+            <span 
+              data-bs-toggle="tooltip"
+              title="{% if room[2] == 'occupied' %}Không thể sửa vì phòng đang sử dụng{% endif %}"
+            >
+              <a 
+                href="{{ url_for('edit_room', room_id=room[0]) if room[2] != 'occupied' else '#' }}" 
+                class="btn btn-sm btn-primary {% if room[2] == 'occupied' %}disabled{% endif %}" 
+                tabindex="-1"
+                aria-disabled="{{ 'true' if room[2] == 'occupied' else 'false' }}"
+              >
+                Sửa
+              </a>
+            </span>
+
+
             <form method="POST" action="{{ url_for('delete_room', room_id=room[0]) }}" style="display:inline;">
               <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa phòng này?');">Xóa</button>
             </form>
+          </th>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -190,3 +232,10 @@
 
 </body>
 </html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+</script>
