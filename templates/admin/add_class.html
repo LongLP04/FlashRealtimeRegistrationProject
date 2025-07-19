@@ -29,7 +29,11 @@
       border-left: 4px solid transparent;
       transition: all 0.2s ease-in-out;
     }
-
+    .sidebar h4 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+    }
     .sidebar a:hover,
     .sidebar a.active {
       background: #495057;
@@ -77,8 +81,8 @@
 
 <!-- Sidebar cố định -->
 <div class="sidebar">
-  
-  <a href="/dashboard">🏠 Trang chính</a>
+  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  <a href="/dashboard" >🏠 Trang chính</a>
   <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}" class="active"><span class="icon">➕</span>Tạo lớp học</a>
   <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
@@ -123,15 +127,18 @@
 
     <div class="row mb-3">
       <div class="col-md-6">
-        <label for="room" class="form-label">🏠 Phòng học</label>
-        <input type="text" class="form-control" name="room" placeholder="Nhập tên phòng" required>
+        <label for="room_id" class="form-label">🏠 Phòng học</label>
+        <select class="form-select" id="room_id" name="room_id" required>
+          {% for room in rooms %}
+            <option value="{{ room[0] }}">{{ room[1] }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="col-md-6">
         <label for="capacity" class="form-label">👥 Sĩ số tối đa</label>
         <input type="number" class="form-control" name="capacity" min="1" placeholder="Nhập sĩ số tối đa" required>
       </div>
     </div>
-
     <button type="submit" class="btn btn-success mt-3">✅ Tạo lớp học</button>
   </form>
 </div>

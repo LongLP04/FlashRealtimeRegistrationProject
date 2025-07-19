@@ -102,7 +102,7 @@
 
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}" class="active"><span class="icon">📂</span>Xem lớp học</a>
+  <a href="{{ url_for('view_classes') }}" class="active" ><span class="icon">📂</span>Xem lớp học</a>
 
   {% if user.role == 'admin' %}
     <hr class="text-secondary mx-3">
@@ -116,8 +116,13 @@
 
 <!-- Main content -->
 <div class="main-content">
-  <h2>📋 Danh sách lớp học</h2>
-
+  
+  {% if user.role == 'admin' %}
+    <h2>📋 Danh sách lớp học</h2>
+  {% endif %}
+  {% if user.role == 'teacher' %}
+    <h2>👨‍🏫 Danh sách lớp học của bạn</h2>
+  {% endif %}
   <div class="table-responsive">
     <table class="table table-striped table-hover align-middle">
       <thead class="table-warning text-center">
@@ -128,6 +133,9 @@
           <th scope="col">Phòng học</th>
           <th scope="col">Sĩ số tối đa</th>
           <th scope="col">Đã đăng ký</th>
+        {%if user.role == 'admin' %}
+          <th scope="col">Thao tác</th>
+        {% endif %}
         </tr>
       </thead>
       <tbody class="text-center">
@@ -139,6 +147,9 @@
           <td>{{ c[3] }}</td>
           <td>{{ c[4] }}</td>
           <td>{{ c[5] }}</td>
+          {%if user.role == 'admin' %}
+              <a href="{{ url_for('add_schedule', class_id=c[0]) }}" class="btn btn-sm btn-success">Tạo thời khóa biểu</a>
+          {%endif %}
         </tr>
         {% endfor %}
       </tbody>

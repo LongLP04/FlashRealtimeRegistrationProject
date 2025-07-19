@@ -36,7 +36,11 @@
       border-left: 4px solid #00c6a2;
       color: #fff;
     }
-
+    .sidebar h4 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+    }
     .sidebar .icon {
       margin-right: 8px;
     }
@@ -83,7 +87,8 @@
 
 <!-- Sidebar cố định -->
 <div class="sidebar">
-  <a href="/dashboard">🏠 Trang chính</a>
+  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  <a href="/dashboard" >🏠 Trang chính</a>
   <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
   <a href="{{ url_for('add_room') }}" class="active"><span class="icon">➕</span>Thêm phòng học</a>

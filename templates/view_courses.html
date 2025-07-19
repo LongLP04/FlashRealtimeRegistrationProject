@@ -108,8 +108,8 @@
   {% endif %}
 
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}" class="active"><span class="icon">📂</span>Xem lớp học</a>
+  <a href="{{ url_for('view_courses') }}" class="active"><span class="icon">📂</span>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}" ><span class="icon">📂</span>Xem lớp học</a>
 
   {% if user.role == 'admin' %}
     <hr class="text-secondary mx-3">

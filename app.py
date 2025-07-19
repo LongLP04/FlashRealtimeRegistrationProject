@@ -30,7 +30,7 @@ def load_user(user_id):
         return User(*row)
     return None
 
-# ROUTES
+# Dăng nhập, đăng xuất
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -70,6 +70,8 @@ def logout():
      flash("Đăng xuất thành công!", "success")
      return redirect(url_for('login'))
 
+
+# Xem danh sách phòng học, thêm, sửa, xóa
 @app.route('/add-room', methods=['GET', 'POST'])
 @login_required
 def add_room():
@@ -85,17 +87,65 @@ def add_room():
         conn.close()
         flash("Đã thêm phòng học thành công!", "success")
         return redirect(url_for('dashboard'))
-    return render_template('admin/add_room.html')
-
+    return render_template('admin/add_room.html',user =current_user)
 @app.route('/view-rooms')
 @login_required
 def view_rooms():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    rooms = cursor.execute("SELECT * FROM rooms").fetchall()
+    query = """
+        select r.id, r.name, r.status, co.name as course_name, u.full_name as teacher_name
+        from rooms r
+        left join classes c on r.id = c.room_id
+        left join courses co on c.course_id = co.id
+        left join users u on c.teacher_id = u.id
+        group by r.id
+    """
+    rooms = cursor.execute(query).fetchall()
     conn.close()
     return render_template('view_rooms.html', rooms=rooms, user =current_user)
+@app.route('/delete-room/<int:room_id>', methods=['POST'])
+@login_required
+def delete_room(room_id):
+    if current_user.role != 'admin':
+        return 'Không có quyền truy câp', 403
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM rooms WHERE id = ?", (room_id,))
+        conn.commit()
+        flash("Đã xóa phòng học thành công!", "success")
+    except sqlite3.Error as e:
+        conn.rollback()
+        flash(f"Lỗi khi xóa phòng học: {str(e)}", "danger")
+    return redirect(url_for('view_rooms'))
+@app.route('/edit-room/<int:room_id>', methods=['POST', 'GET'])
+@login_required
+def edit_room(room_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        name = request.form['name']
+        status = request.form['status']
+        cursor.execute('UPDATE rooms SET name = ?, status = ? WHERE id = ?', (name, status, room_id))
+        conn.commit()
+        conn.close()
+        flash("Đã cập nhật phòng học thành công!", "success")
+        return redirect(url_for('view_rooms'))
+    else:
+        cursor.execute("SELECT * FROM rooms WHERE id = ?", (room_id,))
+        room = cursor.fetchone()
+        conn.close()
+        if room:
+            return render_template('admin/edit_room.html', room=room, user=current_user)
+        else:
+            flash("Phòng học không tồn tại!", "danger")
+            return redirect(url_for('view_rooms'))
+        
 
+# Thêm khóa học, xem danh sách khóa học
 @app.route('/add-course', methods=['GET', 'POST'])
 @login_required
 def add_course():
@@ -111,7 +161,7 @@ def add_course():
         conn.close()
         flash("Đã thêm khóa học!", "success")
         return redirect(url_for('dashboard'))
-    return render_template('admin/add_course.html')
+    return render_template('admin/add_course.html', user=current_user)
 
 @app.route('/view-courses')
 @login_required
@@ -122,6 +172,9 @@ def view_courses():
     conn.close()
     return render_template('view_courses.html', courses=courses, user =current_user)
 
+
+
+# Thêm lớp học, xem danh sách lớp học
 @app.route('/add-class', methods=['GET', 'POST'])
 @login_required
 def add_class():
@@ -151,24 +204,41 @@ def add_class():
         return redirect(url_for('dashboard'))
 
     conn.close()
-    return render_template('admin/add_class.html', courses=courses, teachers=teachers, rooms=rooms)
+    return render_template('admin/add_class.html', courses=courses, teachers=teachers, rooms=rooms, user =current_user)
 
 @app.route('/view-classes')
 @login_required
 def view_classes():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    query = """
-        SELECT classes.id, courses.name, users.full_name, rooms.name, classes.capacity, classes.registered
-        FROM classes
-        JOIN courses ON classes.course_id = courses.id
-        JOIN users ON classes.teacher_id = users.id
-        JOIN rooms ON classes.room_id = rooms.id
-    """
-    classes = cursor.execute(query).fetchall()
+    if( current_user.role == 'admin'): 
+        query = """
+            SELECT classes.id, courses.name, users.full_name, rooms.name, classes.capacity, classes.registered
+            FROM classes
+            JOIN courses ON classes.course_id = courses.id
+            JOIN users ON classes.teacher_id = users.id
+            JOIN rooms ON classes.room_id = rooms.id
+        """
+        classes = cursor.execute(query).fetchall()
+    elif (current_user.role == 'teacher'):
+        query = """
+            SELECT classes.id, courses.name, users.full_name, rooms.name, classes.capacity, classes.registered
+            FROM classes
+            JOIN courses ON classes.course_id = courses.id
+            JOIN users ON classes.teacher_id = users.id
+            JOIN rooms ON classes.room_id = rooms.id
+            where classes.teacher_id = ?
+        """
+        classes = cursor.execute(query, (current_user.id,)).fetchall()
+    else:
+        conn.close()
+        return "Không có quyền truy cập", 403
     conn.close()
     return render_template('view_classes.html', classes=classes, user = current_user)
 
+
+
+# Xem danh sách người dùng
 @app.route('/view-users')
 @login_required
 def view_users():
@@ -178,8 +248,10 @@ def view_users():
     cursor = conn.cursor()
     users = cursor.execute("SELECT id, full_name, email, role FROM users").fetchall()
     conn.close()
-    return render_template('admin/view_users.html', users=users)
+    return render_template('admin/view_users.html', user=current_user, users=users)
 
+
+# Đăng ký người dùng, chỉnh sửa role
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -237,6 +309,55 @@ def update_role(id):
 
     return redirect(url_for('admin/view_users'))  # Quay lại trang danh sách người dùng
 
+
+
+# Thêm lịch học, giảng viên xem lịch dạy
+@app.route('/add-schedule/<int:class_id>', methods=['GET', 'POST'])
+@login_required
+def add_schedule(class_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+
+    if request.method == 'POST':
+        day = request.form['day_of_week']
+        start = request.form['start_time']
+        end = request.form['end_time']
+
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
+            VALUES (?, ?, ?, ?)
+        """, (class_id, day, start, end))
+        conn.commit()
+        conn.close()
+
+        flash("Đã thêm thời khóa biểu!", "success")
+        return redirect(url_for('view_classes'))
+
+    return render_template('admin/add_schedule.html', class_id=class_id)
+@app.route('/teacher-schedule')
+@login_required
+def teacher_schedule():
+    if current_user.role != 'teacher':
+        return "Không có quyền truy cập", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    query = """
+        SELECT c.id, co.name, s.day_of_week, s.start_time, s.end_time, r.name
+        FROM classes c
+        JOIN courses co ON c.course_id = co.id
+        JOIN schedules s ON s.class_id = c.id
+        JOIN rooms r ON c.room_id = r.id
+        WHERE c.teacher_id = ?
+        ORDER BY s.day_of_week, s.start_time
+    """
+    result = cursor.execute(query, (current_user.id,)).fetchall()
+    conn.close()
+
+    return render_template('teacher/teacher_schedule.html', schedule=result, user = current_user)
 
 
 # Khởi tạo cơ sở dữ liệu
@@ -321,28 +442,6 @@ def init_db():
 def index():
     return render_template('index.html')
 
-@app.route('/teacher-schedule')
-@login_required
-def teacher_schedule():
-    if current_user.role != 'teacher':
-        return "Không có quyền truy cập", 403
-
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-
-    query = """
-        SELECT c.id, co.name, s.day_of_week, s.start_time, s.end_time, r.name
-        FROM classes c
-        JOIN courses co ON c.course_id = co.id
-        JOIN schedules s ON s.class_id = c.id
-        JOIN rooms r ON c.room_id = r.id
-        WHERE c.teacher_id = ?
-        ORDER BY s.day_of_week, s.start_time
-    """
-    result = cursor.execute(query, (current_user.id,)).fetchall()
-    conn.close()
-
-    return render_template('teacher/teacher_schedule.html', schedule=result)
 
 
 # Chạy app

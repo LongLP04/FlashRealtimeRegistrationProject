@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Thêm thời khóa biểu</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+  <h3>📅 Thêm thời khóa biểu cho lớp #{{ class_id }}</h3>
+  <form method="POST" class="mt-4">
+    <div class="mb-3">
+      <label for="day_of_week" class="form-label">Thứ</label>
+      <select name="day_of_week" id="day_of_week" class="form-select" required>
+        <option value="Mon">Thứ 2</option>
+        <option value="Tue">Thứ 3</option>
+        <option value="Wed">Thứ 4</option>
+        <option value="Thu">Thứ 5</option>
+        <option value="Fri">Thứ 6</option>
+        <option value="Sat">Thứ 7</option>
+        <option value="Sun">Chủ nhật</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="start_time" class="form-label">Giờ bắt đầu</label>
+      <input type="time" name="start_time" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="end_time" class="form-label">Giờ kết thúc</label>
+      <input type="time" name="end_time" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Lưu</button>
+    <a href="{{ url_for('view_classes') }}" class="btn btn-secondary">Hủy</a>
+  </form>
+</div>
+
+</body>
+</html>

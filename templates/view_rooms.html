@@ -106,7 +106,7 @@
   {% else %}
     <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
   {% endif %}
-  <a href="/dashboard">🏠 Trang chính</a>
+  <a href="/dashboard" >🏠 Trang chính</a>
 
   {% if user.role == 'admin' %}
     <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
@@ -116,9 +116,9 @@
     <hr class="text-secondary mx-3">
   {% endif %}
 
-  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
+  <a href="{{ url_for('view_rooms') }}" class="active"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}" class="active"><span class="icon">📂</span>Xem lớp học</a>
+  <a href="{{ url_for('view_classes') }}" ><span class="icon">📂</span>Xem lớp học</a>
 
   {% if user.role == 'admin' %}
     <hr class="text-secondary mx-3">
@@ -140,6 +140,9 @@
           <th>Mã phòng</th>
           <th>Tên phòng</th>
           <th>Trạng thái</th>
+          <th>Môn học hiện hành</th>
+          <th>Giảng viên phụ trách</th>
+          <th>Hành động</th>
         </tr>
       </thead>
       <tbody>
@@ -158,6 +161,26 @@
               {{ room[2] }}
             {% endif %}
           </td>
+          <td>
+            {% if room[3] %}
+              {{ room[3] }}
+            {% else %}
+              <span class="text-muted">Không có môn học</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if room[4] %}
+              {{ room[4] }}
+            {% else %}
+              <span class="text-muted">Không có giảng viên</span>
+            {% endif %}
+          </td>
+          <th>
+            
+            <a href="{{ url_for('edit_room', room_id=room[0]) }}" class="btn btn-sm btn-primary">Sửa</a>
+            <form method="POST" action="{{ url_for('delete_room', room_id=room[0]) }}" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa phòng này?');">Xóa</button>
+            </form>
         </tr>
         {% endfor %}
       </tbody>
