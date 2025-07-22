@@ -7,23 +7,33 @@ app = Flask(__name__)
 app.secret_key = 'secret123'
 socketio = SocketIO(app)
 
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
 # Setup Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
-    def __init__(self, id, full_name, email, role):
+    def __init__(self, id, full_name, email, role, dob, phone, gender, cccd, password):
         self.id = id
         self.full_name = full_name
         self.email = email
         self.role = role
+        self.dob = dob
+        self.phone = phone
+        self.gender = gender
+        self.cccd = cccd
+        self.password = password
 
 @login_manager.user_loader
 def load_user(user_id):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT id, full_name, email, role FROM users WHERE id = ?", (user_id,))
+    cursor.execute("SELECT id, full_name, email, role, dob, phone, gender, cccd, password FROM users WHERE id = ?", (user_id,))
     row = cursor.fetchone()
     conn.close()
     if row:
@@ -39,7 +49,7 @@ def login():
 
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, full_name, email, role FROM users WHERE email = ? AND password = ?", (email, password))
+        cursor.execute("SELECT id, full_name, email, role, dob, phone, gender, cccd, password FROM users WHERE email = ? AND password = ?", (email, password))
         user = cursor.fetchone()
         conn.close()
 
@@ -344,61 +354,114 @@ def teacher_schedule():
 
     return render_template('teacher/teacher_schedule.html', schedule=result)
 
-@app.route('/register_course', methods=['POST'])
+@app.route('/register_courses', methods=['POST'])
 @login_required
-def register_course():
-    if session['role'] != 'student':
-        flash("Chỉ sinh viên mới được đăng ký khóa học", "danger")
-        return redirect(url_for('view_courses'))
+def register_courses():
+    # Sử dụng current_user.role thay vì session['role']
+    if current_user.role != 'student':
+        flash("Chỉ sinh viên mới được đăng ký lớp học", "danger") # Đổi "khóa học" thành "lớp học" cho chính xác với database schema
+        return redirect(url_for('view_classes')) # Chuyển hướng về view_classes nếu không phải sinh viên
 
-    course_id = request.form.get('course_id')
-    student_id = session['user_id']  # hoặc 'username', tùy cách bạn lưu
+    class_id = request.form.get('class_id') # Lấy class_id thay vì course_id từ form
+    student_id = current_user.id # Sử dụng current_user.id thay vì session['user_id']
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Kiểm tra nếu đã đăng ký trước đó
-    cursor.execute("SELECT * FROM course_registrations WHERE student_id = ? AND course_id = ?", (student_id, course_id))
-    if cursor.fetchone():
-        flash("Bạn đã đăng ký khóa học này rồi", "warning")
-    else:
-        cursor.execute("INSERT INTO course_registrations (student_id, course_id) VALUES (?, ?)", (student_id, course_id))
-        conn.commit()
-        flash("Đăng ký khóa học thành công!", "success")
+    try:
+        # Kiểm tra nếu đã đăng ký lớp học này trước đó trong bảng 'registrations'
+        cursor.execute("SELECT * FROM registrations WHERE student_id = ? AND class_id = ?", (student_id, class_id))
+        if cursor.fetchone():
+            flash("Bạn đã đăng ký lớp học này rồi", "warning")
+        else:
+            # Kiểm tra xem lớp học còn chỗ trống không
+            cursor.execute("SELECT capacity, registered FROM classes WHERE id = ?", (class_id,))
+            class_info = cursor.fetchone()
 
-    conn.close()
-    return redirect(url_for('view_courses'))
+            if class_info:
+                capacity = class_info['capacity']
+                registered = class_info['registered']
 
+                if registered < capacity:
+                    # Thêm đăng ký vào bảng 'registrations'
+                    cursor.execute("INSERT INTO registrations (student_id, class_id) VALUES (?, ?)", (student_id, class_id))
+                    
+                    # Tăng số lượng sinh viên đã đăng ký trong bảng 'classes'
+                    cursor.execute("UPDATE classes SET registered = registered + 1 WHERE id = ?", (class_id,))
+                    
+                    conn.commit()
+                    flash("Đăng ký lớp học thành công!", "success")
+                else:
+                    flash("Lớp học đã đầy, không thể đăng ký thêm.", "danger")
+            else:
+                flash("Lớp học không tồn tại.", "danger")
+
+    except sqlite3.IntegrityError:
+        # Xử lý trường hợp UNIQUE (class_id, student_id) bị vi phạm (đã đăng ký rồi)
+        flash("Bạn đã đăng ký lớp học này rồi (lỗi trùng lặp).", "warning")
+    except Exception as e:
+        conn.rollback() # Hoàn tác các thay đổi nếu có lỗi khác
+        flash(f"Lỗi khi đăng ký lớp học: {str(e)}", "danger")
+    finally:
+        conn.close()
+
+        return redirect(url_for('view_classes')) # Chuyển hướng về trang xem lớp học
 
 
 @app.route('/update_info', methods=['GET', 'POST'])
 @login_required
 def update_info():
-    user = current_user
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
     if request.method == 'POST':
+        # Retrieve personal information from the form
         full_name = request.form['full_name']
-        phone = request.form['phone']
-        current_pw = request.form['current_password']
-        new_pw = request.form['new_password']
-        confirm_pw = request.form['confirm_password']
+        phone = request.form.get('phone') # Use .get() for optional fields
+        dob = request.form.get('dob')
+        gender = request.form.get('gender')
+        cccd = request.form.get('cccd')
 
-        # Cập nhật thông tin cá nhân
-        user.full_name = full_name
-        user.phone = phone
+        try:
+            # Update personal information in the database
+            update_query = """
+                UPDATE users
+                SET full_name = ?, phone = ?, dob = ?, gender = ?, cccd = ?
+                WHERE id = ?
+            """
+            update_params = (full_name, phone, dob, gender, cccd, current_user.id) # Use current_user.id for the WHERE clause
 
-        # Nếu muốn đổi mật khẩu
-        if current_pw and new_pw and confirm_pw:
-            if not check_password_hash(user.password, current_pw):
-                return render_template("student/information.html", user=user, error_message="Sai mật khẩu hiện tại")
-            if new_pw != confirm_pw:
-                return render_template("student/information.html", user=user, error_message="Mật khẩu mới không khớp")
-            user.password = generate_password_hash(new_pw)
+            cursor.execute(update_query, update_params)
+            conn.commit()
+            flash("Cập nhật thông tin cá nhân thành công!", "success")
 
-        db.session.commit()
-        return render_template("information.html", user=user, success_message="Cập nhật thành công")
+        except sqlite3.Error as e:
+            conn.rollback() # Rollback changes if an error occurs
+            flash(f"Lỗi khi cập nhật thông tin: {str(e)}", "danger")
+        finally:
+            conn.close()
+            # It's good practice to close the connection in all branches
 
-    return render_template("information.html", user=user)
+        # Redirect to the GET route of the same page to show updated info and clear form submission state
+        return redirect(url_for('update_info'))
 
+    # For GET request, display the current user information
+    # Fetch the latest user data to display in the form
+    cursor.execute("SELECT id, full_name, email, role, dob, phone, gender, cccd, password FROM users WHERE id = ?", (current_user.id,))
+    user_data = cursor.fetchone()
+    conn.close()
+
+    if user_data:
+        # Create a User object from the fetched data to pass to the template
+        # Make sure your User class __init__ can handle all these fields
+        user = User(*user_data)
+    else:
+        # Fallback if user data isn't found (shouldn't happen with @login_required)
+        user = current_user
+        flash("Không tìm thấy thông tin người dùng.", "danger")
+
+
+    return render_template("student/information.html", user=user)
 
 
 # Chạy app

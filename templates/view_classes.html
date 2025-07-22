@@ -164,6 +164,9 @@
   {% endfor %}
 </tbody>
     </table>
+    {% if user.role == 'student' %}
+      <a href="/dashboard" class="btn btn-outline-secondary mb-3">← Quay lại trang chính</a>
+      {% endif %}
   </div>
 </div>
 

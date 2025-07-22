@@ -146,7 +146,7 @@
       {% if course[0] in registered_courses %}
         <span class="badge bg-success">Đã đăng ký</span>
       {% else %}
-       <form method="POST" action="{{ url_for('register_course') }}">
+       <form method="POST" action="{{ url_for('register_courses') }}">
           <input type="hidden" name="course_id" value="{{ course[0] }}">
           <button type="submit" class="btn btn-outline-success btn-sm">Đăng ký</button>
         </form>
