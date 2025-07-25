@@ -74,10 +74,10 @@
 <!-- Sidebar trái -->
 <div class="sidebar">
   <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
-
-  <a href="{{ url_for('view_courses') }}"><span class="icon">📚</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}"><span class="icon">🏫</span>Xem lớp học</a>
-  <a href="{{ url_for('view_rooms') }}"><span class="icon">📁</span>Xem phòng học</a>
+  <a href="/dashboard">🏠 Trang chính</a>
+    <a href="{{ url_for('view_rooms') }}"><span class="icon">📁</span>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
   <a href="{{ url_for('teacher_schedule') }}"><span class="icon">🗓️</span>Thời khóa biểu</a>
 
   <hr class="text-secondary mx-3">

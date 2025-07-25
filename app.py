@@ -477,7 +477,7 @@ def add_schedule(class_id):
         flash("Đã thêm thời khóa biểu!", "success")
         return redirect(url_for('view_classes'))
 
-    return render_template('admin/add_schedule.html', class_id=class_id)
+    return render_template('admin/add_schedule.html', class_id=class_id, user=current_user)
 @app.route('/teacher-schedule')
 @login_required
 def teacher_schedule():
