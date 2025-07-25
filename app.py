@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Response, jsonify
 from flask_socketio import SocketIO
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
+from datetime import datetime
 import sqlite3
+import json
 
 app = Flask(__name__)
 app.secret_key = 'secret123'
@@ -500,6 +503,144 @@ def teacher_schedule():
     conn.close()
 
     return render_template('teacher/teacher_schedule.html', schedule=result, user = current_user)
+
+
+# Lấy lớp để gán lịch, thêm lịch thời khóa biểu
+@app.route('/api/classes')
+def get_classes():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT classes.id, rooms.name, courses.name
+        FROM classes
+        JOIN rooms ON classes.room_id = rooms.id
+        JOIN courses ON classes.course_id = courses.id
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    result = []
+    for row in rows:
+        class_id, room_name, course_name = row
+        result.append({
+            "id": class_id,
+            "label": f"Phòng {room_name}: {course_name}"
+        })
+
+    return Response(
+        json.dumps(result, ensure_ascii=False),
+        mimetype='application/json'
+    )
+# @app.route('/api/schedules', methods=['POST'])
+# def save_schedule():
+#     try:
+#         data = request.get_json()
+#         class_id = data.get('class_id')
+#         day_of_week = data.get('day_of_week')
+#         start_time = data.get('start_time')
+#         end_time = data.get('end_time')
+
+#         if not all([class_id, day_of_week, start_time, end_time]):
+#             return jsonify({'success': False, 'message': 'Thiếu thông tin lịch'}), 400
+
+#         conn = sqlite3.connect('database.db')
+#         cursor = conn.cursor()
+
+#         cursor.execute("""
+#             INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
+#             VALUES (?, ?, ?, ?)
+#         """, (class_id, day_of_week, start_time, end_time))
+
+#         conn.commit()
+#         conn.close()
+#         return jsonify({'success': True})
+
+#     except Exception as e:
+#         print("Lỗi thêm lịch:", e)
+#         return jsonify({'success': False, 'message': 'Lỗi server'}), 500
+@app.route('/api/schedules', methods=['POST'])
+def save_schedule():
+    data = request.get_json()
+    print("🔥 Full request data:", data)
+
+    class_id = data.get('class_id')
+    day_of_week = data.get('day_of_week')
+    start_time = data.get('start_time')
+    end_time = data.get('end_time')
+
+    print("📥 Dữ liệu nhận được:")
+    print("class_id:", class_id)
+    print("day_of_week:", day_of_week)
+    print("start_time:", start_time)
+    print("end_time:", end_time)
+
+    if not all([class_id, day_of_week, start_time, end_time]):
+        return jsonify({'success': False, 'message': 'Thiếu thông tin lịch'}), 400
+
+    # 👉 Giả định bạn có bảng `schedules` và thực hiện lưu vào database:
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
+            VALUES (?, ?, ?, ?)
+        """, (class_id, day_of_week, start_time, end_time))
+
+        conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print("❌ Lỗi khi lưu:", e)
+        return jsonify({'success': False, 'message': str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/schedules')
+def load_schedules():
+    def get_date_for_weekday(day_of_week):
+        mapping = {
+            'Mon': '2025-07-28',
+            'Tue': '2025-07-29',
+            'Wed': '2025-07-30',
+            'Thu': '2025-07-31',
+            'Fri': '2025-08-01',
+            'Sat': '2025-08-02',
+            'Sun': '2025-08-03',
+        }
+        return mapping.get(day_of_week, '2025-07-28')  # fallback là thứ 2
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT s.day_of_week, s.start_time, s.end_time, r.name, c.name
+        FROM schedules s
+        JOIN classes cl ON s.class_id = cl.id
+        JOIN rooms r ON cl.room_id = r.id
+        JOIN courses c ON cl.course_id = c.id
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    events = []
+    for day_of_week, start, end, room, course in rows:
+        date_str = get_date_for_weekday(day_of_week)
+        start_iso = f"{date_str}T{start}:00"
+        end_iso = f"{date_str}T{end}:00"
+
+        events.append({
+            'title': f"{room}: {course}",
+            'start': start_iso,
+            'end': end_iso
+        })
+
+    return jsonify(events)
+
+
 
 
 # Khởi tạo cơ sở dữ liệu

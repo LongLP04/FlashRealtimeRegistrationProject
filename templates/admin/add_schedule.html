@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Thêm thời khóa biểu</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -60,79 +61,162 @@
       padding: 40px;
     }
 
-    .main-content h2 {
+    .main-content h2, .main-content h3 {
       font-weight: bold;
       margin-bottom: 32px;
       color: #28a745;
     }
 
-    .form-label {
-      font-weight: 600;
-    }
-
-    .btn-success {
-      padding: 12px 24px;
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    .btn-secondary {
-      padding: 12px 24px;
-      font-weight: 600;
-      font-size: 16px;
+    #calendar {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      padding: 20px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body class="bg-light">
 
-<!-- Sidebar cố định -->
 <div class="sidebar">
   <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
   <a href="/dashboard" >🏠 Trang chính</a>
   <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
   <a href="{{ url_for('add_room') }}" class="active"><span class="icon">➕</span>Thêm phòng học</a>
-
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
-
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
+
 <div class="main-content">
-  <h3>📅 Thêm thời khóa biểu cho lớp #{{ class_id }}</h3>
-  <form method="POST" class="mt-4">
-    <div class="mb-3">
-      <label for="day_of_week" class="form-label">Thứ</label>
-      <select name="day_of_week" id="day_of_week" class="form-select" required>
-        <option value="Mon">Thứ 2</option>
-        <option value="Tue">Thứ 3</option>
-        <option value="Wed">Thứ 4</option>
-        <option value="Thu">Thứ 5</option>
-        <option value="Fri">Thứ 6</option>
-        <option value="Sat">Thứ 7</option>
-        <option value="Sun">Chủ nhật</option>
-      </select>
+  <h3>🗓️ Thêm thời khóa biểu</h3>
+  <div id="calendar"></div>
+
+  <!-- Modal chọn lớp -->
+  <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="scheduleForm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="scheduleModalLabel">Thêm lịch học</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="classSelect" class="form-label">Chọn lớp học</label>
+              <select class="form-select" id="classSelect" required></select>
+            </div>
+            <input type="hidden" id="eventStart">
+            <input type="hidden" id="eventEnd">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Thêm</button>
+          </div>
+        </div>
+      </form>
     </div>
-    <div class="mb-3">
-      <label for="start_time" class="form-label">Giờ bắt đầu</label>
-      <input type="time" name="start_time" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label for="end_time" class="form-label">Giờ kết thúc</label>
-      <input type="time" name="end_time" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-success">Lưu</button>
-    <a href="{{ url_for('view_classes') }}" class="btn btn-secondary">Hủy</a>
-  </form>
+  </div>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'timeGridWeek',
+      slotMinTime: '07:00:00',
+      slotMaxTime: '17:00:00',
+      slotDuration: '5:00:00',
+      allDaySlot: false,
+      selectable: true,
+      height: 'auto',
+      hiddenDays: [0],
+
+      columnHeaderFormat: (date) => {
+        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        return days[date.getDay()];
+      },
+
+      select: function (info) {
+        document.getElementById('eventStart').value = info.startStr;
+        document.getElementById('eventEnd').value = info.endStr;
+        loadClasses();
+
+        const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+        modal.show();
+      },
+
+      events: '/api/schedules',
+    });
+
+    calendar.render();
+
+    document.getElementById('scheduleForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const classSelect = document.getElementById('classSelect');
+      const classId = parseInt(classSelect.value);
+
+      const start = new Date(document.getElementById('eventStart').value);
+      const end = new Date(document.getElementById('eventEnd').value);
+
+      const dayOfWeek = start.toLocaleDateString('en-US', { weekday: 'short' }); // "Mon", "Tue", ...
+
+      const payload = {
+        class_id: classId,
+        day_of_week: dayOfWeek,
+        start_time: start.toTimeString().slice(0, 5), // '07:00'
+        end_time: end.toTimeString().slice(0, 5)      // '11:30'
+      };
+
+      console.log("📤 Gửi lên API:", payload);
+
+      fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Reload lại lịch
+          calendar.refetchEvents();
+        } else {
+          alert('Lỗi khi lưu thời khóa biểu: ' + data.message);
+        }
+      })
+      .catch(err => {
+        alert('Lỗi kết nối đến server!');
+        console.error(err);
+      });
+
+      bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
+    });
+
+
+    function loadClasses() {
+      fetch('/api/classes')
+        .then(response => response.json())
+        .then(data => {
+          const select = document.getElementById('classSelect');
+          select.innerHTML = '';
+          data.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.id;
+            option.text = cls.label;
+            select.appendChild(option);
+          });
+        });
+    }
+  });
+</script>
 
 </body>
 </html>
