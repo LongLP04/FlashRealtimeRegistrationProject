@@ -3,6 +3,7 @@ from flask import Response, jsonify
 from flask_socketio import SocketIO
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
 from datetime import datetime
+from dateutil.parser import parse
 import sqlite3
 import json
 
@@ -251,31 +252,35 @@ def edit_course(course_id):
 def add_class():
     if current_user.role != 'admin':
         return "Không có quyền truy cập", 403
+
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
     courses = cursor.execute("SELECT id, name FROM courses").fetchall()
     teachers = cursor.execute("SELECT id, full_name FROM users WHERE role = 'teacher'").fetchall()
-    rooms = cursor.execute("SELECT id, name FROM rooms WHERE status = 'available'").fetchall()
+    rooms = cursor.execute("SELECT id, name FROM rooms").fetchall()
+    semesters = cursor.execute("SELECT id, name, start_date, end_date FROM semesters").fetchall()
 
     if request.method == 'POST':
         course_id = request.form['course_id']
         teacher_id = request.form['teacher_id']
         room_id = request.form['room_id']
         capacity = request.form['capacity']
+        semester_id = request.form['semester_id']
 
-        cursor.execute("INSERT INTO classes (course_id, teacher_id, room_id, capacity) VALUES (?, ?, ?, ?)",
-                       (course_id, teacher_id, room_id, capacity))
-
-        cursor.execute("UPDATE rooms SET status = 'occupied' WHERE id = ?", (room_id,))
+        cursor.execute("""
+            INSERT INTO classes (course_id, teacher_id, room_id, capacity, semester_id)
+            VALUES (?, ?, ?, ?, ?)
+        """, (course_id, teacher_id, room_id, capacity, semester_id))
 
         conn.commit()
         conn.close()
         flash("Đã tạo lớp học thành công!", "success")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('view_classes'))
 
     conn.close()
-    return render_template('admin/add_class.html', courses=courses, teachers=teachers, rooms=rooms, user =current_user)
+    return render_template('admin/add_class.html', user=current_user, courses=courses, teachers=teachers, rooms=rooms, semesters=semesters)
+
 
 @app.route('/view-classes')
 @login_required
@@ -452,35 +457,46 @@ def update_role(id):
     finally:
         conn.close()
 
-    return redirect(url_for('admin/view_users'))  # Quay lại trang danh sách người dùng
+    return redirect(url_for('view_users'))  # Quay lại trang danh sách người dùng
 
 
 
 # Thêm lịch học, giảng viên xem lịch dạy
-@app.route('/add-schedule/<int:class_id>', methods=['GET', 'POST'])
+@app.route('/add-schedule', methods=['GET', 'POST'])
 @login_required
-def add_schedule(class_id):
+def add_schedule():
     if current_user.role != 'admin':
         return "Không có quyền truy cập", 403
 
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Lấy danh sách lớp để cho chọn khi tạo thời khóa biểu
+    classes = cursor.execute("""
+        SELECT classes.id, courses.name, users.full_name 
+        FROM classes
+        JOIN courses ON classes.course_id = courses.id
+        JOIN users ON classes.teacher_id = users.id
+    """).fetchall()
+
     if request.method == 'POST':
+        class_id = request.form['class_id']
         day = request.form['day_of_week']
         start = request.form['start_time']
         end = request.form['end_time']
 
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
             VALUES (?, ?, ?, ?)
         """, (class_id, day, start, end))
         conn.commit()
         conn.close()
-
         flash("Đã thêm thời khóa biểu!", "success")
         return redirect(url_for('view_classes'))
 
-    return render_template('admin/add_schedule.html', class_id=class_id, user=current_user)
+    conn.close()
+    return render_template('admin/add_schedule.html', classes=classes, user=current_user)
+
 @app.route('/teacher-schedule')
 @login_required
 def teacher_schedule():
@@ -491,18 +507,67 @@ def teacher_schedule():
     cursor = conn.cursor()
 
     query = """
-        SELECT c.id, co.name, s.day_of_week, s.start_time, s.end_time, r.name
+        SELECT c.id, co.name, s.date, s.day_of_week, s.start_time, s.end_time, r.name
         FROM classes c
         JOIN courses co ON c.course_id = co.id
         JOIN schedules s ON s.class_id = c.id
         JOIN rooms r ON c.room_id = r.id
         WHERE c.teacher_id = ?
-        ORDER BY s.day_of_week, s.start_time
+        ORDER BY s.date, s.start_time
     """
     result = cursor.execute(query, (current_user.id,)).fetchall()
     conn.close()
 
-    return render_template('teacher/teacher_schedule.html', schedule=result, user = current_user)
+    return render_template('teacher/teacher_schedule.html', schedule=result, user=current_user)
+
+
+@app.route('/teacher-calendar')
+@login_required
+def teacher_calendar():
+    if current_user.role != 'teacher':
+        return "Không có quyền truy cập", 403
+    return render_template('teacher/teacher_calendar.html', user=current_user)
+
+
+@app.route('/api/teacher-schedules')
+@login_required
+def api_teacher_schedules():
+    if current_user.role != 'teacher':
+        return jsonify([])
+
+    start_raw = request.args.get('start', '')
+    end_raw = request.args.get('end', '')
+
+    try:
+        start_date = parse(start_raw).date()
+        end_date = parse(end_raw).date()
+    except Exception as e:
+        return jsonify([])
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    query = """
+        SELECT s.date, s.start_time, s.end_time, r.name, co.name
+        FROM schedules s
+        JOIN classes c ON s.class_id = c.id
+        JOIN rooms r ON c.room_id = r.id
+        JOIN courses co ON c.course_id = co.id
+        WHERE c.teacher_id = ? AND s.date BETWEEN ? AND ?
+    """
+    data = cursor.execute(query, (current_user.id, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))).fetchall()
+    conn.close()
+
+    events = []
+    for row in data:
+        date, start, end, room, course = row
+        events.append({
+            'title': f"{start} - {end} - {room}: {course}",
+            'start': f"{date}T{start}:00",
+            'end': f"{date}T{end}:00"
+        })
+
+    return jsonify(events)
 
 
 # Lấy lớp để gán lịch, thêm lịch thời khóa biểu
@@ -533,114 +598,288 @@ def get_classes():
         json.dumps(result, ensure_ascii=False),
         mimetype='application/json'
     )
+
 # @app.route('/api/schedules', methods=['POST'])
 # def save_schedule():
+#     data = request.get_json()
+#     class_ids = data.get('class_ids', [])
+#     day_of_week = data.get('day_of_week')
+#     start_time = data.get('start_time')
+#     end_time = data.get('end_time')
+
+#     if not class_ids or not day_of_week or not start_time or not end_time:
+#         return jsonify({'success': False, 'message': 'Thiếu thông tin lịch'}), 400
+
+#     conn = sqlite3.connect('database.db')
+#     cursor = conn.cursor()
+
 #     try:
-#         data = request.get_json()
-#         class_id = data.get('class_id')
-#         day_of_week = data.get('day_of_week')
-#         start_time = data.get('start_time')
-#         end_time = data.get('end_time')
+#         # 🔍 Lấy danh sách (teacher_id, course_name) từ các class_ids
+#         teacher_ids = []
+#         for class_id in class_ids:
+#             cursor.execute("""
+#                 SELECT teacher_id FROM classes WHERE id = ?
+#             """, (class_id,))
+#             teacher = cursor.fetchone()
+#             if teacher:
+#                 teacher_ids.append((class_id, teacher[0]))
 
-#         if not all([class_id, day_of_week, start_time, end_time]):
-#             return jsonify({'success': False, 'message': 'Thiếu thông tin lịch'}), 400
+#         # ✅ Kiểm tra trùng lịch của giảng viên
+#         for class_id, teacher_id in teacher_ids:
+#             cursor.execute("""
+#                 SELECT s.id FROM schedules s
+#                 JOIN classes c ON s.class_id = c.id
+#                 WHERE c.teacher_id = ?
+#                 AND s.day_of_week = ?
+#                 AND (
+#                     (? < s.end_time AND ? > s.start_time)
+#                 )
+#             """, (teacher_id, day_of_week, start_time, end_time))
 
-#         conn = sqlite3.connect('database.db')
-#         cursor = conn.cursor()
+#             conflict = cursor.fetchone()
+#             if conflict:
+#                 return jsonify({
+#                     'success': False,
+#                     'message': f"Giảng viên đã có lớp khác vào khoảng {start_time} - {end_time} ngày {day_of_week}."
+#                 }), 400
 
-#         cursor.execute("""
-#             INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
-#             VALUES (?, ?, ?, ?)
-#         """, (class_id, day_of_week, start_time, end_time))
+#         # Nếu không có xung đột, tiến hành lưu từng lớp
+#         for class_id in class_ids:
+#             cursor.execute("""
+#                 INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
+#                 VALUES (?, ?, ?, ?)
+#             """, (class_id, day_of_week, start_time, end_time))
 
 #         conn.commit()
-#         conn.close()
 #         return jsonify({'success': True})
 
 #     except Exception as e:
-#         print("Lỗi thêm lịch:", e)
-#         return jsonify({'success': False, 'message': 'Lỗi server'}), 500
+#         conn.rollback()
+#         return jsonify({'success': False, 'message': str(e)}), 500
+
+#     finally:
+#         conn.close()
 @app.route('/api/schedules', methods=['POST'])
 def save_schedule():
     data = request.get_json()
-    print("🔥 Full request data:", data)
-
-    class_id = data.get('class_id')
+    class_ids = data.get('class_ids', [])
     day_of_week = data.get('day_of_week')
     start_time = data.get('start_time')
     end_time = data.get('end_time')
+    selected_date = data.get('date')  # dạng yyyy-MM-dd
 
-    print("📥 Dữ liệu nhận được:")
-    print("class_id:", class_id)
-    print("day_of_week:", day_of_week)
-    print("start_time:", start_time)
-    print("end_time:", end_time)
-
-    if not all([class_id, day_of_week, start_time, end_time]):
+    if not class_ids or not day_of_week or not start_time or not end_time or not selected_date:
         return jsonify({'success': False, 'message': 'Thiếu thông tin lịch'}), 400
 
-    # 👉 Giả định bạn có bảng `schedules` và thực hiện lưu vào database:
+    try:
+        selected_date_obj = datetime.datetime.strptime(selected_date, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Định dạng ngày không hợp lệ'}), 400
+
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
     try:
-        cursor.execute("""
-            INSERT INTO schedules (class_id, day_of_week, start_time, end_time)
-            VALUES (?, ?, ?, ?)
-        """, (class_id, day_of_week, start_time, end_time))
+        for class_id in class_ids:
+            # Lấy học kỳ và thông tin lớp
+            cursor.execute("""
+                SELECT c.teacher_id, c.room_id, s.start_date, s.end_date
+                FROM classes c
+                JOIN semesters s ON c.semester_id = s.id
+                WHERE c.id = ?
+            """, (class_id,))
+            result = cursor.fetchone()
+
+            if not result:
+                return jsonify({'success': False, 'message': 'Lớp chưa được gán học kỳ hoặc không tồn tại'}), 400
+
+            teacher_id, room_id, semester_start, semester_end = result
+            semester_start = datetime.datetime.strptime(semester_start, "%Y-%m-%d").date()
+            semester_end = datetime.datetime.strptime(semester_end, "%Y-%m-%d").date()
+
+            weekday_target = selected_date_obj.weekday()  # 0=Thứ 2
+
+            # Lặp qua các ngày trong học kỳ
+            current_date = semester_start
+            delta = datetime.timedelta(days=1)
+
+            while current_date <= semester_end:
+                if current_date.weekday() == weekday_target:
+                    date_str = current_date.strftime("%Y-%m-%d")
+
+                    # 1. Kiểm tra trùng lịch với lớp hiện tại
+                    cursor.execute("""
+                        SELECT id FROM schedules
+                        WHERE class_id = ? AND date = ?
+                        AND ( (? < end_time AND ? > start_time) )
+                    """, (class_id, date_str, start_time, end_time))
+                    if cursor.fetchone():
+                        return jsonify({'success': False, 'message': f"Lớp đã có lịch vào {date_str}"}), 400
+
+                    # 2. Kiểm tra trùng lịch với giáo viên
+                    cursor.execute("""
+                        SELECT s.id FROM schedules s
+                        JOIN classes c ON s.class_id = c.id
+                        WHERE c.teacher_id = ?
+                        AND s.date = ?
+                        AND ( (? < s.end_time AND ? > s.start_time) )
+                    """, (teacher_id, date_str, start_time, end_time))
+                    if cursor.fetchone():
+                        return jsonify({'success': False, 'message': f"Giảng viên đã có lịch vào {date_str}"}), 400
+
+                    # 3. Kiểm tra trùng lịch với phòng học
+                    cursor.execute("""
+                        SELECT s.id FROM schedules s
+                        JOIN classes c ON s.class_id = c.id
+                        WHERE c.room_id = ?
+                        AND s.date = ?
+                        AND ( (? < s.end_time AND ? > s.start_time) )
+                    """, (room_id, date_str, start_time, end_time))
+                    if cursor.fetchone():
+                        return jsonify({'success': False, 'message': f"Phòng học đã được sử dụng vào {date_str}"}), 400
+
+                    # ✅ Nếu không có xung đột thì lưu
+                    cursor.execute("""
+                        INSERT INTO schedules (class_id, day_of_week, start_time, end_time, date)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (class_id, day_of_week, start_time, end_time, date_str))
+
+                current_date += delta
 
         conn.commit()
         return jsonify({'success': True})
+
     except Exception as e:
-        print("❌ Lỗi khi lưu:", e)
+        conn.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
     finally:
         conn.close()
 
 
+
+
+# @app.route('/api/schedules')
+# def load_schedules():
+#     def get_date_for_weekday(day_of_week):
+#         mapping = {
+#             'Mon': '2025-07-28',
+#             'Tue': '2025-07-29',
+#             'Wed': '2025-07-30',
+#             'Thu': '2025-07-31',
+#             'Fri': '2025-08-01',
+#             'Sat': '2025-08-02',
+#             'Sun': '2025-08-03',
+#         }
+#         return mapping.get(day_of_week, '2025-07-28')  # fallback là thứ 2
+
+#     conn = sqlite3.connect('database.db')
+#     cursor = conn.cursor()
+
+#     cursor.execute("""
+#         SELECT s.day_of_week, s.start_time, s.end_time, r.name, c.name
+#         FROM schedules s
+#         JOIN classes cl ON s.class_id = cl.id
+#         JOIN rooms r ON cl.room_id = r.id
+#         JOIN courses c ON cl.course_id = c.id
+#     """)
+
+#     rows = cursor.fetchall()
+#     conn.close()
+
+#     events = []
+#     for day_of_week, start, end, room, course in rows:
+#         date_str = get_date_for_weekday(day_of_week)
+#         start_iso = f"{date_str}T{start}:00"
+#         end_iso = f"{date_str}T{end}:00"
+
+#         events.append({
+#             'title': f"{room}: {course}",
+#             'start': start_iso,
+#             'end': end_iso,
+#             'extendedProps': {
+#                 'room': room,
+#                 'course': course,
+#                 'start_time': start,
+#                 'end_time': end
+#             }
+#         })
+
+#     return jsonify(events)
+
+import datetime
+
 @app.route('/api/schedules')
 def load_schedules():
-    def get_date_for_weekday(day_of_week):
-        mapping = {
-            'Mon': '2025-07-28',
-            'Tue': '2025-07-29',
-            'Wed': '2025-07-30',
-            'Thu': '2025-07-31',
-            'Fri': '2025-08-01',
-            'Sat': '2025-08-02',
-            'Sun': '2025-08-03',
-        }
-        return mapping.get(day_of_week, '2025-07-28')  # fallback là thứ 2
+    start_raw = request.args.get('start', '')
+    try:
+        start_date = parse(start_raw).date()
+    except Exception as e:
+        print("❌ Lỗi parse ngày:", e)
+        return jsonify([])
+
+    end_raw = request.args.get('end', '')
+    try:
+        end_date = parse(end_raw).date()
+    except:
+        end_date = start_date + datetime.timedelta(days=6)
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT s.day_of_week, s.start_time, s.end_time, r.name, c.name
+        SELECT s.date, s.start_time, s.end_time, r.name, c.name
         FROM schedules s
         JOIN classes cl ON s.class_id = cl.id
         JOIN rooms r ON cl.room_id = r.id
         JOIN courses c ON cl.course_id = c.id
-    """)
+        WHERE s.date BETWEEN ? AND ?
+    """, (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
 
     rows = cursor.fetchall()
     conn.close()
 
     events = []
-    for day_of_week, start, end, room, course in rows:
-        date_str = get_date_for_weekday(day_of_week)
-        start_iso = f"{date_str}T{start}:00"
-        end_iso = f"{date_str}T{end}:00"
-
+    for date_str, start, end, room, course in rows:
         events.append({
             'title': f"{room}: {course}",
-            'start': start_iso,
-            'end': end_iso
+            'start': f"{date_str}T{start}:00",
+            'end': f"{date_str}T{end}:00",
+            'extendedProps': {
+                'room': room,
+                'course': course,
+                'start_time': start,
+                'end_time': end
+            }
         })
 
     return jsonify(events)
 
 
+
+# Tạo học kỳ
+@app.route('/add-semester', methods=['GET', 'POST'])
+@login_required
+def add_semester():
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
+
+    if request.method == 'POST':
+        name = request.form['name']
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO semesters (name, start_date, end_date)
+            VALUES (?, ?, ?)
+        """, (name, start_date, end_date))
+        conn.commit()
+        conn.close()
+        flash("✅ Đã thêm học kỳ mới!", "success")
+        return redirect(url_for('add_semester'))
+
+    return render_template('admin/add_semester.html', user=current_user)
 
 
 # Khởi tạo cơ sở dữ liệu
@@ -720,6 +959,62 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+@app.route('/init-semester')
+def init_semester():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS semesters (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            start_date TEXT NOT NULL,  -- yyyy-MM-dd
+            end_date TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+    return "✅ Đã tạo bảng semesters nếu chưa có."
+@app.route('/alter-classes-add-semester')
+def alter_classes_add_semester():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            ALTER TABLE classes ADD COLUMN semester_id INTEGER REFERENCES semesters(id)
+        """)
+        conn.commit()
+        return "✅ Đã thêm cột semester_id vào bảng classes."
+    except Exception as e:
+        return f"⚠️ Có thể cột đã tồn tại: {str(e)}"
+    finally:
+        conn.close()
+
+@app.route('/init-schedule-date')
+def init_schedule_date_column():
+    try:
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+
+        # Kiểm tra xem cột 'date' đã tồn tại chưa
+        cursor.execute("PRAGMA table_info(schedules)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        if 'date' not in columns:
+            cursor.execute("ALTER TABLE schedules ADD COLUMN date TEXT")
+            conn.commit()
+            message = "✅ Đã thêm cột 'date' vào bảng schedules."
+        else:
+            message = "ℹ️ Cột 'date' đã tồn tại trong bảng schedules."
+
+        conn.close()
+        return message
+    except Exception as e:
+        return f"❌ Lỗi khi thêm cột 'date': {str(e)}"
+
 
 @app.route('/')
 def index():

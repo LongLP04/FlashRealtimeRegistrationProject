@@ -86,6 +86,8 @@
   <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}" class="active"><span class="icon">➕</span>Tạo lớp học</a>
   <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
+  <a href="{{ url_for('add_schedule') }}"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
+  <a href="{{ url_for('add_semester') }}" ><span class="icon">🗓️</span>Thêm học kỳ</a>
 
   <hr class="text-secondary mx-3">
 
@@ -124,13 +126,20 @@
         </select>
       </div>
     </div>
-
     <div class="row mb-3">
       <div class="col-md-6">
         <label for="room_id" class="form-label">🏠 Phòng học</label>
         <select class="form-select" id="room_id" name="room_id" required>
           {% for room in rooms %}
             <option value="{{ room[0] }}">{{ room[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="semester_id" class="form-label">🗓️ Chọn học kỳ</label>
+        <select class="form-select" name="semester_id" required>
+          {% for semester in semesters %}
+            <option value="{{ semester[0] }}">{{ semester[1] }} ({{ semester[2] }} → {{ semester[3] }})</option>
           {% endfor %}
         </select>
       </div>

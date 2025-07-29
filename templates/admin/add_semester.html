@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Thêm Khóa Học</title>
+  <title>Thêm học kỳ</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -29,16 +29,18 @@
       border-left: 4px solid transparent;
       transition: all 0.2s ease-in-out;
     }
-    .sidebar h4 {
-      color: #fff;
-      text-align: center;
-      margin-bottom: 30px;
-    }
+
     .sidebar a:hover,
     .sidebar a.active {
       background: #495057;
       border-left: 4px solid #00c6a2;
       color: #fff;
+    }
+
+    .sidebar h4 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
     }
 
     .sidebar .icon {
@@ -60,71 +62,55 @@
       padding: 40px;
     }
 
-    .main-content h2 {
+    h2 {
       font-weight: bold;
       margin-bottom: 32px;
-      color: #007bff;
+      color: #198754;
     }
 
-    .form-label {
-      font-weight: 600;
-    }
-
-    .btn-primary {
-      padding: 12px 20px;
-      font-weight: 600;
-      font-size: 16px;
-      background-color: #007bff;
-      border: none;
-    }
-
-    .btn-primary:hover {
-      background-color: #0056b3;
+    label {
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
 
-<!-- Sidebar cố định -->
+<!-- Sidebar -->
 <div class="sidebar">
   <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
-  <a href="/dashboard" >🏠 Trang chính</a>
-  <a href="{{ url_for('add_course') }}" class="active"><span class="icon">➕</span>Thêm khóa học</a>
+  <a href="/dashboard">🏠 Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
   <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
   <a href="{{ url_for('add_schedule') }}"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
-  <a href="{{ url_for('add_semester') }}"><span class="icon">🗓️</span>Thêm học kỳ</a>
-
+  <a href="{{ url_for('add_semester') }}" class="active"><span class="icon">🗓️</span>Thêm học kỳ</a>
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
-
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
   <hr class="text-secondary mx-3">
-
   <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
 </div>
 
-<!-- Phần nội dung -->
+<!-- Nội dung chính -->
 <div class="main-content">
-  <h2>📘 Thêm Khóa Học Mới</h2>
-
-  <form method="POST">
+  <h2>📅 Thêm học kỳ mới</h2>
+  <form method="POST" action="{{ url_for('add_semester') }}">
     <div class="mb-3">
-      <label for="name" class="form-label">📚 Tên khóa học</label>
-      <input type="text" class="form-control" name="name" placeholder="Nhập tên khóa học..." required>
+      <label for="name" class="form-label">Tên học kỳ</label>
+      <input type="text" class="form-control" id="name" name="name" required placeholder="VD: Học kỳ 1 năm 2025">
     </div>
-
     <div class="mb-3">
-      <label for="description" class="form-label">📝 Mô tả khóa học</label>
-      <textarea class="form-control" name="description" rows="4" placeholder="Thêm mô tả chi tiết (nếu có)..."></textarea>
+      <label for="start_date" class="form-label">Ngày bắt đầu</label>
+      <input type="date" class="form-control" id="start_date" name="start_date" required>
     </div>
-
-    <button type="submit" class="btn btn-primary">➕ Thêm khóa học</button>
+    <div class="mb-3">
+      <label for="end_date" class="form-label">Ngày kết thúc</label>
+      <input type="date" class="form-control" id="end_date" name="end_date" required>
+    </div>
+    <button type="submit" class="btn btn-success">Lưu học kỳ</button>
   </form>
 </div>
 

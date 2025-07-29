@@ -1,222 +1,257 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Thêm thời khóa biểu</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f8f9fa;
-    }
+  <!DOCTYPE html>
+  <html lang="vi">
+  <head>
+    <meta charset="UTF-8">
+    <title>Thêm thời khóa biểu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: #f8f9fa;
+      }
 
-    .sidebar {
-      width: 250px;
-      min-height: 100vh;
-      background: #343a40;
-      padding-top: 40px;
-      position: fixed;
-      left: 0;
-      top: 0;
-    }
+      .sidebar {
+        width: 250px;
+        min-height: 100vh;
+        background: #343a40;
+        padding-top: 40px;
+        position: fixed;
+        left: 0;
+        top: 0;
+      }
 
-    .sidebar a {
-      display: block;
-      padding: 12px 24px;
-      color: #ddd;
-      text-decoration: none;
-      border-left: 4px solid transparent;
-      transition: all 0.2s ease-in-out;
-    }
+      .sidebar a {
+        display: block;
+        padding: 12px 24px;
+        color: #ddd;
+        text-decoration: none;
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease-in-out;
+      }
 
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #495057;
-      border-left: 4px solid #00c6a2;
-      color: #fff;
-    }
-    .sidebar h4 {
-      color: #fff;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .sidebar .icon {
-      margin-right: 8px;
-    }
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: #495057;
+        border-left: 4px solid #00c6a2;
+        color: #fff;
+      }
+      .sidebar h4 {
+        color: #fff;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .sidebar .icon {
+        margin-right: 8px;
+      }
 
-    .logout-link {
-      color: #ffc9cc !important;
-    }
+      .logout-link {
+        color: #ffc9cc !important;
+      }
 
-    .logout-link:hover {
-      background: #721c24;
-      color: white !important;
-      border-left-color: #dc3545;
-    }
+      .logout-link:hover {
+        background: #721c24;
+        color: white !important;
+        border-left-color: #dc3545;
+      }
 
-    .main-content {
-      margin-left: 250px;
-      padding: 40px;
-    }
+      .main-content {
+        margin-left: 250px;
+        padding: 40px;
+      }
 
-    .main-content h2, .main-content h3 {
-      font-weight: bold;
-      margin-bottom: 32px;
-      color: #28a745;
-    }
+      .main-content h2, .main-content h3 {
+        font-weight: bold;
+        margin-bottom: 32px;
+        color: #28a745;
+      }
 
-    #calendar {
-      background: #fff;
-      border: 1px solid #dee2e6;
-      padding: 20px;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body class="bg-light">
+      #calendar {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
 
-<div class="sidebar">
-  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
-  <a href="/dashboard" >🏠 Trang chính</a>
-  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
-  <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
-  <a href="{{ url_for('add_room') }}" class="active"><span class="icon">➕</span>Thêm phòng học</a>
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
-</div>
+  <div class="sidebar">
+    <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+    <a href="/dashboard" >🏠 Trang chính</a>
+    <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
+    <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
+    <a href="{{ url_for('add_room') }}" ><span class="icon">➕</span>Thêm phòng học</a>
+    <a href="{{ url_for('add_schedule') }}"class="active"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
+      <a href="{{ url_for('add_semester') }}" ><span class="icon">🗓️</span>Thêm học kỳ</a>
 
-<div class="main-content">
-  <h3>🗓️ Thêm thời khóa biểu</h3>
-  <div id="calendar"></div>
+    <hr class="text-secondary mx-3">
+    <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
+    <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
+    <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
+    <hr class="text-secondary mx-3">
+    <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
+    <hr class="text-secondary mx-3">
+    <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
+  </div>
 
-  <!-- Modal chọn lớp -->
-  <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="scheduleForm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="scheduleModalLabel">Thêm lịch học</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="classSelect" class="form-label">Chọn lớp học</label>
-              <select class="form-select" id="classSelect" required></select>
+  <div class="main-content">
+    <h3>🗓️ Thêm thời khóa biểu</h3>
+    <div id="calendar"></div>
+
+    <!-- Modal chọn lớp -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="scheduleForm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="scheduleModalLabel">Thêm lịch học</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
-            <input type="hidden" id="eventStart">
-            <input type="hidden" id="eventEnd">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="classSelect" class="form-label">Chọn lớp học</label>
+                <select class="form-select" id="classSelect" multiple required></select>
+                <small class="text-muted">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều lớp</small>
+              </div>
+              <input type="hidden" id="eventStart">
+              <input type="hidden" id="eventEnd">
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success">Thêm</button>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Thêm</button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        slotMinTime: '07:00:00',
+        slotMaxTime: '17:00:00',
+        slotDuration: '05:00:00',
+        allDaySlot: false,
+        selectable: true,
+        height: 'auto',
+        hiddenDays: [0],
 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'timeGridWeek',
-      slotMinTime: '07:00:00',
-      slotMaxTime: '17:00:00',
-      slotDuration: '5:00:00',
-      allDaySlot: false,
-      selectable: true,
-      height: 'auto',
-      hiddenDays: [0],
+        // ✅ Tăng chiều cao khung giờ
+        slotMinHeight: 60,
 
-      columnHeaderFormat: (date) => {
-        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-        return days[date.getDay()];
-      },
+        // ✅ Ngày hiển thị tiếng Việt
+        columnHeaderFormat: (date) => {
+          const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+          return days[date.getDay()];
+        },
 
-      select: function (info) {
-        document.getElementById('eventStart').value = info.startStr;
-        document.getElementById('eventEnd').value = info.endStr;
-        loadClasses();
+        select: function (info) {
+          document.getElementById('eventStart').value = info.startStr;
+          document.getElementById('eventEnd').value = info.endStr;
+          loadClasses();
+          const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+          modal.show();
+        },
 
-        const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
-        modal.show();
-      },
+        events: '/api/schedules',
 
-      events: '/api/schedules',
-    });
+        // ✅ Thêm tooltip khi rê chuột
+        eventDidMount: function (info) {
+          const course = info.event.extendedProps.course;
+          const room = info.event.extendedProps.room;
+          const start = info.event.extendedProps.start_time;
+          const end = info.event.extendedProps.end_time;
 
-    calendar.render();
-
-    document.getElementById('scheduleForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const classSelect = document.getElementById('classSelect');
-      const classId = parseInt(classSelect.value);
-
-      const start = new Date(document.getElementById('eventStart').value);
-      const end = new Date(document.getElementById('eventEnd').value);
-
-      const dayOfWeek = start.toLocaleDateString('en-US', { weekday: 'short' }); // "Mon", "Tue", ...
-
-      const payload = {
-        class_id: classId,
-        day_of_week: dayOfWeek,
-        start_time: start.toTimeString().slice(0, 5), // '07:00'
-        end_time: end.toTimeString().slice(0, 5)      // '11:30'
-      };
-
-      console.log("📤 Gửi lên API:", payload);
-
-      fetch('/api/schedules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Reload lại lịch
-          calendar.refetchEvents();
-        } else {
-          alert('Lỗi khi lưu thời khóa biểu: ' + data.message);
+          new bootstrap.Tooltip(info.el, {
+            title: `📚 Môn: ${course}\n ${room}\n🕘 ${start} - ${end}`,
+            placement: 'top',
+            trigger: 'hover',
+            container: 'body'
+          });
         }
-      })
-      .catch(err => {
-        alert('Lỗi kết nối đến server!');
-        console.error(err);
       });
 
-      bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
-    });
 
 
-    function loadClasses() {
-      fetch('/api/classes')
+      calendar.render();
+
+      document.getElementById('scheduleForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const classSelect = document.getElementById('classSelect');
+        const selectedOptions = Array.from(classSelect.selectedOptions);
+        const classIds = selectedOptions.map(opt => parseInt(opt.value));
+
+        const start = new Date(document.getElementById('eventStart').value);
+        const end = new Date(document.getElementById('eventEnd').value);
+        const dayOfWeek = start.toLocaleDateString('en-US', { weekday: 'short' }); // "Mon", "Tue", ...
+
+        const payload = {
+          class_ids: classIds,
+          day_of_week: dayOfWeek,
+          start_time: start.toTimeString().slice(0, 5),
+          end_time: end.toTimeString().slice(0, 5),
+          date: start.toISOString().split("T")[0]
+        };
+
+        fetch('/api/schedules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
         .then(response => response.json())
         .then(data => {
-          const select = document.getElementById('classSelect');
-          select.innerHTML = '';
-          data.forEach(cls => {
-            const option = document.createElement('option');
-            option.value = cls.id;
-            option.text = cls.label;
-            select.appendChild(option);
-          });
+          if (data.success) {
+            calendar.refetchEvents();
+          } else {
+            alert('Lỗi khi lưu thời khóa biểu: ' + data.message);
+          }
+        })
+        .catch(err => {
+          alert('Lỗi kết nối đến server!');
+          console.error(err);
         });
-    }
-  });
-</script>
 
-</body>
-</html>
+        bootstrap.Modal.getInstance(document.getElementById('scheduleModal')).hide();
+      });
+
+      function loadClasses() {
+        fetch('/api/classes')
+          .then(response => response.json())
+          .then(data => {
+            const select = document.getElementById('classSelect');
+            select.innerHTML = '';
+            data.forEach(cls => {
+              const option = document.createElement('option');
+              option.value = cls.id;
+              option.text = cls.label;
+              select.appendChild(option);
+            });
+          });
+      }
+    });
+  </script>
+
+  </body>
+  </html>
+  <style>
+    .fc-timegrid-slot-label,
+    .fc-timegrid-slot {
+      height: 60px !important; /* Hoặc 80px */
+      font-size: 16px;
+    }
+
+    .fc-event-title {
+      font-weight: bold;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 24px;
+    }
+  </style>

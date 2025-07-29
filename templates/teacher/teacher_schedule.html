@@ -123,7 +123,7 @@
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}" ><span class="icon">📂</span>Xem lớp học</a>
-  <a href="{{ url_for('teacher_schedule') }}" class="active"><span class="icon">🗓️</span>Thời khóa biểu</a>
+  <a href="{{ url_for('teacher_schedule') }}" class="active"><span class="icon">🗓️</span>Thời khóa biểu của tôi</a>
 
   {% if user.role == 'admin' %}
     <hr class="text-secondary mx-3">
@@ -136,37 +136,36 @@
 
 <!-- Main content -->
 <div class="main-content">
-  <h2>🗓️ Thời khóa biểu giảng dạy</h2>
-
-  {% if schedule %}
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover bg-white">
-      <thead class="table-dark text-center">
-        <tr>
-          <th>#</th>
-          <th>Tên lớp</th>
-          <th>Thứ</th>
-          <th>Thời gian</th>
-          <th>Phòng học</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for idx, row in enumerate(schedule, start=1) %}
-        <tr>
-          <td class="text-center">{{ idx }}</td>
-          <td>{{ row[1] }}</td> <!-- Tên khóa học -->
-          <td class="text-center">{{ row[2] }}</td> <!-- Thứ -->
-          <td class="text-center">{{ row[3] }} - {{ row[4] }}</td> <!-- Thời gian -->
-          <td class="text-center">{{ row[5] }}</td> <!-- Phòng học -->
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-    <div class="alert alert-warning">Bạn hiện không có lịch giảng dạy nào được phân công.</div>
-  {% endif %}
+  <h3>📅 Lịch giảng dạy của tôi</h3>
+  <div id="calendar"></div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'timeGridWeek',
+      slotMinTime: '07:00:00',
+      slotMaxTime: '17:00:00',
+      allDaySlot: false,
+      selectable: false,
+      editable: false,
+      hiddenDays: [0],
+      height: 'auto',
+
+      columnHeaderFormat: (date) => {
+        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        return days[date.getDay()];
+      },
+
+      events: '/api/teacher-schedules'
+    });
+
+    calendar.render();
+  });
+</script>
+
 
 </body>
 </html>

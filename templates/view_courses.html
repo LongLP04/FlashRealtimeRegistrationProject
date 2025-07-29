@@ -103,6 +103,7 @@
     <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
     <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
     <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
+    <a href="{{ url_for('add_schedule') }}"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
 
     <hr class="text-secondary mx-3">
   {% endif %}
@@ -110,6 +111,7 @@
   <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}" class="active"><span class="icon">📂</span>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}" ><span class="icon">📂</span>Xem lớp học</a>
+ 
   {%if user.role == 'teacher' %}
   <a href="{{ url_for('teacher_schedule') }}"><span class="icon">🗓️</span>Thời khóa biểu của tôi</a>
   {% endif %}
