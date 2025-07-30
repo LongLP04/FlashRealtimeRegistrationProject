@@ -90,6 +90,25 @@
   <h2>👨‍🏫 Trang giảng viên</h2>
   <p>Chọn một chức năng từ thanh bên trái để xem thông tin giảng dạy của bạn.</p>
 </div>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io();
+
+  // ✅ Không cần lồng script
+  const CURRENT_USER_ID = {{ user.id | tojson | safe }};
+
+  socket.on('role_updated', data => {
+    if (data.user_id === CURRENT_USER_ID) {
+      const newRole = data.new_role;
+      // 👉 Chuyển trang tương ứng
+      if (newRole === 'student') {
+        window.location.href = "/student";
+      
+      }
+    }
+  });
+</script>
+
 
 </body>
 </html>

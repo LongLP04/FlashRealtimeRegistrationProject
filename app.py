@@ -4,8 +4,18 @@ from flask_socketio import SocketIO
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
 from datetime import datetime
 from dateutil.parser import parse
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_socketio import emit
+import os
+from werkzeug.utils import secure_filename
 import sqlite3
 import json
+
+
+
+
+
 
 app = Flask(__name__)
 app.secret_key = 'secret123'
@@ -17,17 +27,18 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
-    def __init__(self, id, full_name, email, role):
+    def __init__(self, id, full_name, email, role, image):
         self.id = id
         self.full_name = full_name
         self.email = email
         self.role = role
+        self.image = image
 
 @login_manager.user_loader
 def load_user(user_id):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT id, full_name, email, role FROM users WHERE id = ?", (user_id,))
+    cursor.execute("SELECT id, full_name, email, role, image FROM users WHERE id = ?", (user_id,))
     row = cursor.fetchone()
     conn.close()
     if row:
@@ -35,6 +46,8 @@ def load_user(user_id):
     return None
 
 # Dăng nhập, đăng xuất
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -43,17 +56,17 @@ def login():
 
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT id, full_name, email, role FROM users WHERE email = ? AND password = ?", (email, password))
+        cursor.execute("SELECT id, full_name, email, role, image, password FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
         conn.close()
 
-        if user:
-            login_user(User(*user))
-            
+        if user and check_password_hash(user[5], password):
+            login_user(User(user[0], user[1], user[2], user[3], user[4]))
             return redirect(url_for('dashboard'))
         else:
             flash("Sai tài khoản hoặc mật khẩu!", "danger")
     return render_template('auth/login.html')
+
 
 @app.route('/dashboard')
 @login_required
@@ -64,7 +77,7 @@ def dashboard():
     elif role == 'teacher':
         return render_template('teacher/teacher.html', user=current_user)
     elif role == 'student':
-        return render_template('student/student.html', user=current_user)
+        return render_template('student/index.html', user=current_user)
     else:
         return "Vai trò không xác định", 403
 
@@ -165,21 +178,56 @@ def edit_room(room_id):
         
 
 # Thêm khóa học, xem danh sách khóa học
+
+
+UPLOAD_FOLDER = 'static/images'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/add-course', methods=['GET', 'POST'])
 @login_required
 def add_course():
     if current_user.role != 'admin':
         return "Không có quyền truy cập", 403
+
     if request.method == 'POST':
         name = request.form['name']
         description = request.form['description']
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO courses (name, description) VALUES (?, ?)", (name, description))
-        conn.commit()
-        conn.close()
-        flash("Đã thêm khóa học!", "success")
-        return redirect(url_for('dashboard'))
+        image_file = request.files.get('image')
+        image_filename = None
+
+        if image_file and allowed_file(image_file.filename):
+            filename = secure_filename(image_file.filename)
+            image_path = os.path.join(UPLOAD_FOLDER, filename)
+            image_file.save(image_path)
+            image_filename = filename
+
+        try:
+            conn = sqlite3.connect('database.db', timeout=10)
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO courses (name, image, description)
+                VALUES (?, ?, ?)
+            """, (name, image_filename,  description))
+            conn.commit()
+            socketio.emit('course_added', {
+                'name': name,            
+                'image': image_filename,
+                'description': description
+            })
+        except Exception as e:
+            conn.rollback()
+            flash(f"Lỗi khi thêm khóa học: {str(e)}", "danger")
+        finally:
+            conn.close()
+
+        flash("✅ Đã thêm khóa học!", "success")
+        
+        return redirect(url_for('view_courses'))
+
     return render_template('admin/add_course.html', user=current_user)
 
 @app.route('/view-courses')
@@ -256,6 +304,7 @@ def add_class():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
+    # Lấy dữ liệu để render form
     courses = cursor.execute("SELECT id, name FROM courses").fetchall()
     teachers = cursor.execute("SELECT id, full_name FROM users WHERE role = 'teacher'").fetchall()
     rooms = cursor.execute("SELECT id, name FROM rooms").fetchall()
@@ -268,18 +317,58 @@ def add_class():
         capacity = request.form['capacity']
         semester_id = request.form['semester_id']
 
-        cursor.execute("""
-            INSERT INTO classes (course_id, teacher_id, room_id, capacity, semester_id)
-            VALUES (?, ?, ?, ?, ?)
-        """, (course_id, teacher_id, room_id, capacity, semester_id))
+        try:
+            # Thêm lớp mới
+            cursor.execute("""
+                INSERT INTO classes (course_id, teacher_id, room_id, capacity, semester_id)
+                VALUES (?, ?, ?, ?, ?)
+            """, (course_id, teacher_id, room_id, capacity, semester_id))
+            conn.commit()
 
-        conn.commit()
-        conn.close()
-        flash("Đã tạo lớp học thành công!", "success")
-        return redirect(url_for('view_classes'))
+            # Lấy ID lớp vừa thêm
+            cursor.execute("SELECT last_insert_rowid()")
+            new_class_id = cursor.fetchone()[0]
+
+            # Truy vấn lại chi tiết lớp học
+            cursor.execute("""
+                SELECT cl.id, co.name, u.full_name, r.name, cl.capacity, cl.registered, s.name, cl.teacher_id
+                FROM classes cl
+                JOIN courses co ON cl.course_id = co.id
+                JOIN users u ON cl.teacher_id = u.id
+                JOIN rooms r ON cl.room_id = r.id
+                JOIN semesters s ON cl.semester_id = s.id
+                WHERE cl.id = ?
+            """, (new_class_id,))
+            new_class = cursor.fetchone()
+
+            # Gửi realtime đến tất cả (JS phía client sẽ lọc teacher_id phù hợp)
+            socketio.emit('class_added', {
+                'id': new_class[0],
+                'course': new_class[1],
+                'teacher': new_class[2],
+                'room': new_class[3],
+                'capacity': new_class[4],
+                'registered': new_class[5],
+                'semester': new_class[6],
+                'teacher_id': new_class[7]
+            })
+
+            flash("✅ Đã tạo lớp học thành công!", "success")
+            return redirect(url_for('view_classes'))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"❌ Lỗi khi tạo lớp học: {str(e)}", "danger")
 
     conn.close()
-    return render_template('admin/add_class.html', user=current_user, courses=courses, teachers=teachers, rooms=rooms, semesters=semesters)
+    return render_template(
+        'admin/add_class.html',
+        user=current_user,
+        courses=courses,
+        teachers=teachers,
+        rooms=rooms,
+        semesters=semesters
+    )
 
 
 @app.route('/view-classes')
@@ -287,30 +376,40 @@ def add_class():
 def view_classes():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    if( current_user.role == 'admin'): 
+
+    if current_user.role == 'admin':
         query = """
-            SELECT classes.id, courses.name, users.full_name, rooms.name, classes.capacity, classes.registered
+            SELECT 
+                classes.id, courses.name, users.full_name, rooms.name, 
+                classes.capacity, classes.registered, semesters.name
             FROM classes
             JOIN courses ON classes.course_id = courses.id
             JOIN users ON classes.teacher_id = users.id
             JOIN rooms ON classes.room_id = rooms.id
+            JOIN semesters ON classes.semester_id = semesters.id
         """
         classes = cursor.execute(query).fetchall()
-    elif (current_user.role == 'teacher'):
+
+    elif current_user.role == 'teacher':
         query = """
-            SELECT classes.id, courses.name, users.full_name, rooms.name, classes.capacity, classes.registered
+            SELECT 
+                classes.id, courses.name, users.full_name, rooms.name, 
+                classes.capacity, classes.registered, semesters.name
             FROM classes
             JOIN courses ON classes.course_id = courses.id
             JOIN users ON classes.teacher_id = users.id
             JOIN rooms ON classes.room_id = rooms.id
-            where classes.teacher_id = ?
+            JOIN semesters ON classes.semester_id = semesters.id
+            WHERE classes.teacher_id = ?
         """
         classes = cursor.execute(query, (current_user.id,)).fetchall()
     else:
         conn.close()
         return "Không có quyền truy cập", 403
+
     conn.close()
-    return render_template('view_classes.html', classes=classes, user = current_user)
+    return render_template('view_classes.html', classes=classes, user=current_user)
+
 
 @app.route('/edit-class/<int:class_id>', methods=['GET', 'POST'])
 @login_required
@@ -402,6 +501,13 @@ def view_users():
 
 
 # Đăng ký người dùng, chỉnh sửa role
+UPLOAD_FOLDER = 'static/images'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -410,23 +516,40 @@ def register():
         password = request.form['password']
         role = request.form['role']
 
-        #check role trước khi thêm vào dtb
         if role == 'teacher':
-            flash ("Không thể đăng ký vai trò giảng viên, liên hệ Admin để được phân quyền.", "danger ")
+            flash("Không thể đăng ký vai trò giảng viên, liên hệ Admin để được phân quyền.", "danger")
             return redirect(url_for('register'))
-
 
         dob = request.form.get('dob')
         phone = request.form.get('phone')
         gender = request.form.get('gender')
         cccd = request.form.get('cccd')
 
+        image_file = request.files.get('image')
+        if not image_file or not allowed_file(image_file.filename):
+            flash("Vui lòng chọn ảnh đại diện hợp lệ (jpg, png, jpeg, gif)", "danger")
+            return redirect(url_for('register'))
+
+        image_filename = secure_filename(image_file.filename)
+        image_path = os.path.join(UPLOAD_FOLDER, image_filename)
+        image_file.save(image_path)
+
+        hashed_password = generate_password_hash(password)
+
         conn = sqlite3.connect('database.db')
         cursor = conn.cursor()
         try:
-            cursor.execute("INSERT INTO users (full_name, email, password, role, dob, phone, gender, cccd) VALUES (?, ?, ?, ?,?,?,?,?)",
-                           (full_name, email, password, role, dob, phone, gender, cccd))
+            cursor.execute("""
+                INSERT INTO users (full_name, email, password, role, dob, phone, gender, cccd, image)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (full_name, email, hashed_password, role, dob, phone, gender, cccd, image_filename))
             conn.commit()
+            # Sau khi commit đăng ký xong:
+            socketio.emit('user_registered', {
+                'full_name': full_name,
+                'email': email,
+                'role': role
+            })
             flash("Đăng ký thành công! Vui lòng đăng nhập.", "success")
             return redirect(url_for('login'))
         except sqlite3.IntegrityError:
@@ -436,13 +559,14 @@ def register():
 
     return render_template('auth/register.html', switch_to_login=False)
 
+
 @app.route('/update-role/<int:id>', methods=['POST'])
 @login_required
 def update_role(id):
     if current_user.role != 'admin':
         return "Không có quyền thay đổi vai trò", 403
 
-    new_role = request.form['role']  # Lấy giá trị role từ form
+    new_role = request.form['role']
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
@@ -450,6 +574,13 @@ def update_role(id):
     try:
         cursor.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, id))
         conn.commit()
+
+        # Gửi sự kiện socket đến client có id tương ứng
+        socketio.emit('role_updated', {
+            'user_id': id,
+            'new_role': new_role
+        })
+
         flash("Cập nhật vai trò thành công!", "success")
     except Exception as e:
         conn.rollback()
@@ -457,10 +588,23 @@ def update_role(id):
     finally:
         conn.close()
 
-    return redirect(url_for('view_users'))  # Quay lại trang danh sách người dùng
+    return redirect(url_for('view_users'))
 
 
+# Chuyển hướng khi thay đổi role k reload
 
+from threading import Timer
+
+def delayed_emit(user_id, new_role):
+    socketio.emit('role_updated', {'user_id': user_id, 'new_role': new_role})
+@app.route('/teacher')
+@login_required
+def teacher_dashboard():
+    return render_template('teacher/teacher.html', user=current_user)
+@app.route('/student')
+@login_required
+def student_dashboard():
+    return render_template('student/index.html', user=current_user)
 # Thêm lịch học, giảng viên xem lịch dạy
 @app.route('/add-schedule', methods=['GET', 'POST'])
 @login_required
@@ -1019,6 +1163,62 @@ def init_schedule_date_column():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+
+# Student
+
+@app.route('/courses')
+def student_courses_static():
+    return render_template('student/courses.html')
+
+# Hiển thị lớp
+@app.route('/student/courses')
+@login_required
+def student_courses():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Lấy danh sách lớp học và thông tin cần hiển thị
+    query = """
+        SELECT cl.id, co.name, u.full_name, r.name, cl.capacity, cl.registered
+        FROM classes cl
+        JOIN courses co ON cl.course_id = co.id
+        JOIN users u ON cl.teacher_id = u.id
+        JOIN rooms r ON cl.room_id = r.id
+    """
+    classes = cursor.execute(query).fetchall()
+    conn.close()
+
+    return render_template('student/courses.html', user=current_user, classes=classes)
+@app.route('/student')
+def index_student():
+    return render_template('student/index.html')
+
+
+
+
+@app.route('/init-images')
+def init_images_column():
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        # Thêm cột image vào bảng users nếu chưa có
+        cursor.execute("ALTER TABLE users ADD COLUMN image TEXT")
+
+    except sqlite3.OperationalError as e:
+        print("❗ users.image đã tồn tại:", e)
+
+    try:
+        # Thêm cột image vào bảng courses nếu chưa có
+        cursor.execute("ALTER TABLE courses ADD COLUMN image TEXT")
+    except sqlite3.OperationalError as e:
+        print("❗ courses.image đã tồn tại:", e)
+
+    conn.commit()
+    conn.close()
+    return "✅ Đã thêm cột 'image' cho bảng users và courses (nếu chưa có)."
 
 
 

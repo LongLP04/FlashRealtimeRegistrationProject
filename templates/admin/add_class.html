@@ -81,6 +81,7 @@
 
 <!-- Sidebar cố định -->
 <div class="sidebar">
+  
   <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
   <a href="/dashboard" >🏠 Trang chính</a>
   <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
@@ -151,6 +152,29 @@
     <button type="submit" class="btn btn-success mt-3">✅ Tạo lớp học</button>
   </form>
 </div>
+<!-- Socket.IO -->
+<script>
+  const socket = io();
+  const CURRENT_USER_ID = {{ user.id | tojson }};
+
+  socket.on('class_added', data => {
+    if (data.teacher_id !== CURRENT_USER_ID) return;
+
+    const html = `
+      <tr>
+        <td>${data.id}</td>
+        <td>${data.course}</td>
+        <td>${data.teacher}</td>
+        <td>${data.room}</td>
+        <td>${data.capacity}</td>
+        <td>${data.registered}</td>
+        <td>${data.semester}</td> <!-- 🆕 Cột học kỳ realtime -->
+      </tr>
+    `;
+    document.getElementById('classTableBody').insertAdjacentHTML('beforeend', html);
+  });
+</script>
+
 
 </body>
 </html>

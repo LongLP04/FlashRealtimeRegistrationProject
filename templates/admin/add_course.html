@@ -113,20 +113,37 @@
 <div class="main-content">
   <h2>📘 Thêm Khóa Học Mới</h2>
 
-  <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
     <div class="mb-3">
       <label for="name" class="form-label">📚 Tên khóa học</label>
-      <input type="text" class="form-control" name="name" placeholder="Nhập tên khóa học..." required>
+      <input type="text" class="form-control" name="name" required>
     </div>
 
     <div class="mb-3">
       <label for="description" class="form-label">📝 Mô tả khóa học</label>
-      <textarea class="form-control" name="description" rows="4" placeholder="Thêm mô tả chi tiết (nếu có)..."></textarea>
+      <textarea class="form-control" name="description" rows="4"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="image" class="form-label">🖼️ Ảnh khóa học</label>
+      <input type="file" class="form-control" name="image" accept="image/*">
     </div>
 
     <button type="submit" class="btn btn-primary">➕ Thêm khóa học</button>
   </form>
+
 </div>
+<!-- Socket.IO -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io();
+
+  socket.on("course_added", (data) => {
+    alert("📘 Khóa học mới đã được thêm: " + data.name);
+    // Bạn có thể thêm logic cập nhật danh sách khóa học realtime tại đây
+    console.log("Khóa học mới:", data);
+  });
+</script>
 
 </body>
 </html>

@@ -3,74 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <title>Đăng ký</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body {
-    animation: slideIn 0.5s ease-in-out;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #007BFF, #00c6a2);
+      background: url('https://img.tripi.vn/cdn-cgi/image/width=700,height=700/https://gcs.tripi.vn/public-tripi/tripi-feed/img/474081JPp/background-powerpoint-xanh-duong-sang_094944576.jpg') no-repeat center center fixed;
+      background-size: cover;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      position: relative;
+      overflow: hidden;
     }
 
-    .wrapper {
-      width: 420px;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-      padding: 40px 30px;
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 1;
+    }
+
+    .signup-container {
+      position: relative;
+      background: white;
+      border-radius: 24px;
+      padding: 50px 40px 40px;
+      width: 460px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      text-align: center;
+      z-index: 2;
+    }
+
+    .profile-icon {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #4dabf7, #00c6a2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     h2 {
-      text-align: center;
-      color: #007BFF;
-      margin-bottom: 24px;
+      margin-top: 50px;
+      margin-bottom: 28px;
+      font-size: 26px;
+      font-weight: 700;
+      color: #00c6a2;
     }
 
     form {
       display: flex;
       flex-direction: column;
+      gap: 18px;
     }
 
     input, select {
-      padding: 12px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 14px 18px;
+      border: 2px solid #e0f4f1;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #f9fdfb;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: #4dabf7;
+      box-shadow: 0 0 0 4px rgba(77, 171, 247, 0.12);
+      outline: none;
+      transform: scale(1.015);
     }
 
     button {
-      background: #00c6a2;
-      color: white;
+      background: linear-gradient(90deg, #4dabf7, #00c6a2);
+      color: #fff;
       border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 14px rgba(0, 198, 162, 0.3);
     }
 
     .toggle-link {
+      margin-top: 20px;
+      color: #4dabf7;
+      font-size: 15px;
       text-align: center;
-      margin-top: 16px;
-      color: #007BFF;
       cursor: pointer;
     }
 
@@ -79,10 +122,12 @@
     }
 
     .error-message {
-      color: red;
+      color: #dc3545;
       font-size: 14px;
-      margin-top: -10px;
-      margin-bottom: 20px;
+      text-align: center;
+      background: #fff5f5;
+      border-radius: 8px;
+      padding: 10px 14px;
     }
 
     .disabled-option {
@@ -92,8 +137,11 @@
 </head>
 <body>
 
-<div class="wrapper">
-  <form method="POST" action="/register">
+<div class="signup-container">
+  <div class="profile-icon">
+    <i class="fas fa-user"></i>
+  </div>
+  <form method="POST" action="/register" enctype="multipart/form-data">
     <h2>Đăng ký tài khoản</h2>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -105,7 +153,7 @@
     <input type="text" name="full_name" placeholder="Họ và tên" required>
     <input type="email" name="email" placeholder="Email" required>
     <input type="password" name="password" placeholder="Mật khẩu" required>
-    <input type="date" name="dob" placeholder="Ngày sinh" required>
+    <input type="date" name="dob" required>
     <input type="text" name="phone" placeholder="Số điện thoại" required>
 
     <select name="gender" required>
@@ -114,21 +162,28 @@
       <option value="female">Nữ</option>
       <option value="other">Khác</option>
     </select>
-
+ 
+    <div class="mb-3">
+      <label for="image" class="form-label">Ảnh đại diện</label>
+      <input type="file" class="form-control" name="image" required>
+    </div>
+    
     <input type="text" name="cccd" placeholder="Số CCCD" required>
 
     <select name="role" id="role" required>
       <option value="" disabled>Chọn vai trò</option>
       <option value="student" selected>Học viên</option>
-      <option value="teacher" class="disabled-option">Giảng viên (Liên hệ admin để được phân quyền)</option>
+      <option value="teacher" class="disabled-option">Giảng viên (Liên hệ admin để phân quyền)</option>
     </select>
 
     <div id="error-message" class="error-message" style="display:none;">
-      Chọn "Giảng viên" không được phép, vui lòng liên hệ admin để được phân quyền.
+      Chọn "Giảng viên" không được phép, vui lòng liên hệ admin.
     </div>
 
-    <button type="submit">Đăng ký</button>
-    <div class="toggle-link" onclick="window.location.href='/login'">Đã có tài khoản? Đăng nhập</div>
+    <button type="submit"><i class="fas fa-user-check"></i> Đăng ký</button>
+    <div class="toggle-link" onclick="window.location.href='/login'">
+      <i class="fas fa-sign-in-alt"></i> Đã có tài khoản? Đăng nhập
+    </div>
   </form>
 </div>
 
@@ -144,13 +199,6 @@
       errorMessage.style.display = "none";
     }
   });
-  const switchToLogin = "{{ 'true' if switch_to_login else 'false' }}";
-
-  if (switchToLogin) {
-    window.onload = function() {
-      switchForm('login');
-    };
-  }
 </script>
 
 </body>

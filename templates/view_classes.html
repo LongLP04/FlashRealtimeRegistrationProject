@@ -139,12 +139,13 @@
           <th scope="col">Phòng học</th>
           <th scope="col">Sĩ số tối đa</th>
           <th scope="col">Đã đăng ký</th>
+          <th scope="col">Học kỳ</th>
         {%if user.role == 'admin' %}
           <th scope="col">Thao tác</th>
         {% endif %}
         </tr>
       </thead>
-      <tbody class="text-center">
+      <tbody class="text-center" id="classTableBody">
         {% for c in classes %}
         <tr>
           <td>{{ c[0] }}</td>
@@ -153,6 +154,7 @@
           <td>{{ c[3] }}</td>
           <td>{{ c[4] }}</td>
           <td>{{ c[5] }}</td>
+           <td>{{ c[6] }}</td> 
           {% if user.role == 'admin' %}
           <td>
             <a href="{{ url_for('edit_class', class_id=c[0]) }}" class="btn btn-sm btn-primary">Sửa</a>
@@ -170,6 +172,28 @@
     </table>
   </div>
 </div>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  const CURRENT_USER_ID = {{ user.id | tojson }};
+
+  socket.on('class_added', data => {
+    if (data.teacher_id !== CURRENT_USER_ID) return;
+
+    const html = `
+      <tr>
+        <td>${data.id}</td>
+        <td>${data.course}</td>
+        <td>${data.teacher}</td>
+        <td>${data.room}</td>
+        <td>${data.registered}/${data.capacity}</td>
+        <td>${data.semester}</td>
+      </tr>
+    `;
+    document.getElementById('classTableBody').insertAdjacentHTML('beforeend', html);
+  });
+</script>
+
 
 </body>
 </html>

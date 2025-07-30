@@ -3,107 +3,184 @@
 <head>
   <meta charset="UTF-8">
   <title>Đăng nhập</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body {
-    animation: slideIn 0.5s ease-in-out;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #007BFF, #00c6a2);
+      background: url('https://img.tripi.vn/cdn-cgi/image/width=700,height=700/https://gcs.tripi.vn/public-tripi/tripi-feed/img/474081JPp/background-powerpoint-xanh-duong-sang_094944576.jpg') no-repeat center center fixed;
+      background-size: cover;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.15);
+      z-index: 1;
     }
 
     .wrapper {
-      width: 400px;
-      background: #fff;
+      width: 500px;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 16px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-      padding: 40px 30px;
+      box-shadow: 0 8px 24px rgba(0, 198, 162, 0.2);
+      padding: 50px 40px;
+      text-align: center;
+      border: 1px solid #e0f4f1;
+      animation: zoomIn 0.8s ease-in-out;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .floating-icon {
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #4dabf7, #00c6a2);
+      color: white;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
+      box-shadow: 0 4px 12px rgba(0, 198, 162, 0.4);
+      z-index: 3;
     }
 
     h2 {
-      text-align: center;
-      color: #007BFF;
+      font-size: 28px;
+      font-weight: 700;
+      color: #00c6a2;
       margin-bottom: 24px;
+      margin-top: 10px;
     }
 
     form {
       display: flex;
       flex-direction: column;
+      gap: 20px;
     }
 
     input {
-      padding: 12px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 14px 18px;
+      border: 2px solid #e0f4f1;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #f9fdfb;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    }
+
+    input:focus {
+      border-color: #4dabf7;
+      box-shadow: 0 0 0 4px rgba(77, 171, 247, 0.1);
+      outline: none;
+      transform: scale(1.02);
     }
 
     button {
-      background: #00c6a2;
-      color: white;
+      background: linear-gradient(90deg, #4dabf7, #00c6a2);
+      color: #ffffff;
       border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 500;
       cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    button i {
+      font-size: 16px;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 198, 162, 0.3);
     }
 
     .toggle-link {
-      text-align: center;
-      margin-top: 16px;
-      color: #007BFF;
-      cursor: pointer;
+      margin-top: 20px;
+      color: #4dabf7;
+      font-size: 15px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     .toggle-link:hover {
       text-decoration: underline;
     }
 
+    .toggle-link i {
+      color: #00c6a2;
+    }
+
     .error-message {
-      color: red;
+      color: #dc3545;
       font-size: 14px;
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      background: #fff5f5;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
 
 <div class="wrapper">
+  <!-- Icon lơ lửng trên khung -->
+  <div class="floating-icon">
+    <i class="fas fa-user-shield"></i>
+  </div>
+
   <form method="POST" action="/login">
     <h2>Đăng nhập</h2>
 
-    <!-- thongbao -->
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     <div>
-        {% for message in messages %}
-        <div class="error-message" role="alert" id="flash-message">
-            {{ message }}
-        </div>
-        {% endfor %}
+      {% for message in messages %}
+      <div class="error-message" role="alert" id="flash-message">
+        {{ message }}
+      </div>
+      {% endfor %}
     </div>
     <script>
-      // Ẩn thông báo sau 1 giây (1000ms)
       setTimeout(function() {
         var flashMessage = document.getElementById("flash-message");
         if (flashMessage) {
@@ -117,8 +194,8 @@
     <input type="email" name="email" placeholder="Email" required>
     <input type="password" name="password" placeholder="Mật khẩu" required>
 
-    <button type="submit">Đăng nhập</button>
-    <div class="toggle-link" onclick="window.location.href='/register'">Chưa có tài khoản? Đăng ký</div>
+    <button type="submit"><i class="fas fa-arrow-right"></i> Đăng nhập</button>
+    <a href="/register" class="toggle-link"><i class="fas fa-user-plus"></i> Chưa có tài khoản? Đăng ký</a>
   </form>
 </div>
 

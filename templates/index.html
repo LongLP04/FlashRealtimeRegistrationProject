@@ -1,113 +1,275 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Trang chủ - Hệ thống khóa học</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
-    <style>
-        .hero h1 {
-            font-size: 3rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px #000;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            text-shadow: 1px 1px 3px #000;
-        }
-        .overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-        }
-        .hero-content {
-            position: relative;
-            z-index: 1;
-        }
-        .navbar-brand {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-weight: 600;
-            font-size: 1.8rem;
-            color: white !important;
-        }
+  <meta charset="UTF-8">
+  <title>Hệ thống khóa học</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        footer {
-            font-size: 0.85rem;
-            padding: 10px 0;
-        }
-    </style>
+  <!-- Font & Icon -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: #f8f9fa;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #004080 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .navbar-brand i {
+      font-size: 1.5rem;
+      color: #00c6a2;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      color: #004080 !important;
+      margin-left: 1.2rem;
+    }
+
+    .nav-link:hover {
+      color: #0099cc !important;
+    }
+
+    .btn-outline-primary, .btn-success {
+      border-radius: 30px;
+      font-weight: 600;
+      padding: 8px 20px;
+    }
+
+    .btn-outline-primary {
+      color: #004080;
+      border-color: #004080;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #004080;
+      color: white;
+    }
+
+    .btn-success {
+      background-color: #00c6a2;
+      border: none;
+    }
+
+    .btn-success:hover {
+      background-color: #009f87;
+    }
+
+    /* Banner */
+    .banner-image {
+      width: 100%;
+      height: 90vh;
+      background: url("/static/images/banner.png") no-repeat center center;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .banner-content {
+      max-width: 850px;
+      padding: 20px;
+    }
+
+    .banner-content h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      color: #003366;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+    }
+
+    .banner-content p {
+      font-size: 2rem;
+      font-weight: 500;
+      color: #003366;
+      text-shadow: 1px 1px 3px rgba(255,255,255,0.7);
+    }
+
+    /* Image Section */
+    .image-section {
+      padding: 60px 20px;
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+
+    .image-section h2 {
+      color: #004080;
+      font-size: 2.8rem;
+      font-weight: 900;
+      position: relative;
+      display: inline-block;
+      margin-bottom: 50px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .image-section h2::after {
+      content: '';
+      width: 70%;
+      height: 4px;
+      background-color: #00c6a2;
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+
+    .feature-box {
+      text-align: center;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .feature-image {
+      width: 100%;
+      height: 300px; /* Kéo dài hơn */
+      object-fit: cover;
+      border-radius: 16px;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+
+    .feature-box:hover .feature-image {
+      transform: scale(1.06);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .image-caption {
+      margin-top: 14px;
+      font-weight: 600;
+      color: #003366;
+      font-size: 1.15rem;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #003366;
+      color: white;
+      padding: 40px 20px;
+    }
+
+    footer a {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    footer h5 {
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    footer .fab {
+      font-size: 1.5rem;
+      margin-right: 12px;
+    }
+  </style>
 </head>
 <body>
 
-<!-- NỀN CHUNG CHO NAVBAR + HERO -->
-<div style="background: url('{{ url_for('static', filename='images/banner.png') }}') no-repeat center center;
-            background-size: cover;
-            color: white;">
-
-    <!-- NAVIGATION -->
-    <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
-            <a class="navbar-brand" href="#">Hệ thống khóa học</a>
-            <div class="ms-auto">
-                <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2">Đăng nhập</a>
-                <a href="{{ url_for('register') }}" class="btn btn-primary">Đăng ký</a>
-            </div>
-        </nav>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-graduation-cap"></i> Hệ Thống Khóa Học
+    </a>
+    <div class="ms-auto">
+      <a href="{{ url_for('login') }}" class="btn btn-outline-primary me-2"><i class="fas fa-sign-in-alt me-1"></i> Đăng nhập</a>
+      <a href="{{ url_for('register') }}" class="btn btn-success"><i class="fas fa-user-plus me-1"></i> Đăng ký</a>
     </div>
+  </div>
+</nav>
 
-    <!-- HERO SECTION -->
-    <div class="hero" style="
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;">
-        <div class="hero-content">
-            <h1>Chào mừng đến với hệ thống khóa học</h1>
-            <p>Đăng ký dễ dàng – Quản lý thông minh</p>
-            <a href="{{ url_for('register') }}" class="btn btn-success mt-3">Đăng ký ngay</a>
-        </div>
-    </div>
+<!-- Banner -->
+<div class="banner-image">
+  <div class="banner-content">
+    <h1>Hệ thống đăng ký khóa học & lớp học thông minh</h1>
+    <p>Đăng ký dễ dàng – Quản lý hiệu quả – Học tập thuận tiện</p>
+    <a href="{{ url_for('register') }}" class="btn btn-success mt-3">Bắt đầu ngay</a>
+  </div>
 </div>
 
-<!-- FOOTER -->
-<footer class="bg-dark text-white pt-4 pb-2">
-    <div class="container">
-        <div class="row">
-            <!-- THÔNG TIN LIÊN HỆ -->
-            <div class="col-md-4 mb-3">
-                <h5>Liên hệ</h5>
-                <p class="mb-1">📍 Khu Công nghệ cao TP.HCM, Đường D1, P.Long Thạnh Mỹ, Hồ Chí Minh, Việt Nam</p>
-                <p class="mb-1">☎️ 028 5445 2222</p>
-                <p>📧 <a href="mailto:taichinh@hutech.edu.vn" class="text-white">taichinh@hutech.edu.vn</a></p>
-            </div>
-
-            <!-- LIÊN KẾT -->
-            <div class="col-md-4 mb-3">
-                <h5>Liên kết</h5>
-                <ul class="list-unstyled">
-                    <li><a href="#" class="text-white text-decoration-none">Giới thiệu</a></li>
-                    <li><a href="#" class="text-white text-decoration-none">Liên hệ</a></li>
-                    <li><a href="#" class="text-white text-decoration-none">Chính sách bảo mật</a></li>
-                </ul>
-            </div>
-
-            <!-- MẠNG XÃ HỘI -->
-            <div class="col-md-4 mb-3">
-                <h5>Kết nối với chúng tôi</h5>
-                <a href="#" class="text-white me-3 fs-4"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-white me-3 fs-4"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-white fs-4"><i class="fab fa-youtube"></i></a>
-            </div>
+<!-- Section: Các khóa học kĩ năng nổi bật -->
+<div class="image-section">
+  <h2>Các khóa học kĩ năng nổi bật</h2>
+  <div class="container">
+    <div class="row justify-content-center g-4">
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="feature-box">
+          <img src="https://i.pinimg.com/736x/65/a2/7a/65a27ac4618bf36f410f09850099c2ad.jpg" class="feature-image" alt="Ngoại Ngữ">
+          <p class="image-caption">Khóa học Ngoại Ngữ</p>
         </div>
-
-        
+      </div>
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="feature-box">
+          <img src="https://i.pinimg.com/736x/c3/05/88/c30588377570a9da991203f1f20a8a1f.jpg" class="feature-image" alt="Giao Tiếp">
+          <p class="image-caption">Khóa học Giao Tiếp</p>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="feature-box">
+            <img src="https://i.pinimg.com/1200x/02/3c/f7/023cf7ecc897a13357db277efedd079c.jpg" class="feature-image" alt="Tin học">
+          <p class="image-caption">Khóa học Tin Học</p>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <h5>Liên hệ</h5>
+        <p>📍 Khu Công nghệ cao TP.HCM, Đường D1, Q.9</p>
+        <p>☎️ 028 5445 2222</p>
+        <p>📧 <a href="mailto:taichinh@hutech.edu.vn">taichinh@hutech.edu.vn</a></p>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h5>Liên kết</h5>
+        <ul class="list-unstyled">
+          <li><a href="#">Giới thiệu</a></li>
+          <li><a href="#">Liên hệ</a></li>
+          <li><a href="#">Chính sách bảo mật</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h5>Kết nối</h5>
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+  </div>
 </footer>
-
-
 </body>
 </html>
+
