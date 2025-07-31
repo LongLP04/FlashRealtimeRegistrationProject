@@ -154,7 +154,7 @@
           <td>{{ c[3] }}</td>
           <td>{{ c[4] }}</td>
           <td>{{ c[5] }}</td>
-           <td>{{ c[6] }}</td> 
+          <td>{{ c[6] }}</td> 
           {% if user.role == 'admin' %}
           <td>
             <a href="{{ url_for('edit_class', class_id=c[0]) }}" class="btn btn-sm btn-primary">Sửa</a>
@@ -186,7 +186,8 @@
         <td>${data.course}</td>
         <td>${data.teacher}</td>
         <td>${data.room}</td>
-        <td>${data.registered}/${data.capacity}</td>
+        <td>${data.capacity}</td>
+        <td>${data.registered}</td>
         <td>${data.semester}</td>
       </tr>
     `;

@@ -499,7 +499,32 @@ def view_users():
     conn.close()
     return render_template('admin/view_users.html', user=current_user, users=users)
 
+@app.route('/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.role != 'admin':
+        return "Không có quyền truy cập", 403
 
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        # Kiểm tra xem người dùng có đang đăng ký lớp nào không
+        cursor.execute("SELECT COUNT(*) FROM registrations WHERE id = ?", (user_id,))
+        registration_count = cursor.fetchone()[0]
+
+        if registration_count > 0:
+            flash("Không thể xóa người dùng vì đã có lớp học đăng ký.", "warning")
+        else:
+            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            conn.commit()
+            flash("Đã xóa người dùng thành công!", "success")
+    except sqlite3.Error as e:
+        conn.rollback()
+        flash(f"Lỗi khi xóa người dùng: {str(e)}", "danger")
+    finally:
+        conn.close()
+    return redirect(url_for('view_users'))
 # Đăng ký người dùng, chỉnh sửa role
 UPLOAD_FOLDER = 'static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -566,22 +591,28 @@ def update_role(id):
     if current_user.role != 'admin':
         return "Không có quyền thay đổi vai trò", 403
 
-    new_role = request.form['role']
+    new_role = request.form.get('role')
+    admin_password = request.form.get('admin_password')
+
+    if not admin_password:
+        flash("❌ Vui lòng nhập mật khẩu để xác nhận!", "danger")
+        return redirect(url_for('view_users'))
 
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
+    cursor.execute("SELECT password FROM users WHERE id = ?", (current_user.id,))
+    stored_hash = cursor.fetchone()[0]
+
+    if not check_password_hash(stored_hash, admin_password):
+        flash("❌ Mật khẩu không đúng!", "danger")
+        conn.close()
+        return redirect(url_for('view_users'))
 
     try:
         cursor.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, id))
         conn.commit()
-
-        # Gửi sự kiện socket đến client có id tương ứng
-        socketio.emit('role_updated', {
-            'user_id': id,
-            'new_role': new_role
-        })
-
-        flash("Cập nhật vai trò thành công!", "success")
+        socketio.emit('role_updated', {'user_id': id, 'new_role': new_role})
+        flash("✅ Cập nhật vai trò thành công!", "success")
     except Exception as e:
         conn.rollback()
         flash(f"Lỗi khi cập nhật vai trò: {str(e)}", "danger")
@@ -1179,22 +1210,169 @@ def student_courses():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
-    # Lấy danh sách lớp học và thông tin cần hiển thị
     query = """
-        SELECT cl.id, co.name, u.full_name, r.name, cl.capacity, cl.registered
+        SELECT cl.id, co.name, u.full_name, r.name, cl.capacity, cl.registered, co.image, u.image, s.name
         FROM classes cl
         JOIN courses co ON cl.course_id = co.id
         JOIN users u ON cl.teacher_id = u.id
         JOIN rooms r ON cl.room_id = r.id
+        JOIN semesters s ON cl.semester_id = s.id
     """
     classes = cursor.execute(query).fetchall()
+
+    cursor.execute("SELECT class_id FROM registrations WHERE student_id = ?", (current_user.id,))
+    registered_class_ids = [row[0] for row in cursor.fetchall()]
+
+    conn.close()
+    return render_template('student/courses.html', user=current_user, classes=classes, registered_class_ids=registered_class_ids)
+
+@app.route('/register-class', methods=['POST'])
+@login_required
+def register_class():
+    if current_user.role != 'student':
+        return jsonify({"success": False, "message": "Chỉ học viên được phép đăng ký"}), 403
+
+    class_id = request.form.get('class_id')
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT date, start_time, end_time FROM schedules WHERE class_id = ?", (class_id,))
+    new_schedule = cursor.fetchall()
+
+    cursor.execute("SELECT class_id FROM registrations WHERE student_id = ?", (current_user.id,))
+    registered_ids = [row[0] for row in cursor.fetchall()]
+
+    if registered_ids:
+        placeholders = ','.join('?' for _ in registered_ids)
+        cursor.execute(f"""
+            SELECT date, start_time, end_time FROM schedules WHERE class_id IN ({placeholders})
+        """, registered_ids)
+        student_schedule = cursor.fetchall()
+    else:
+        student_schedule = []
+
+    for new_date, new_start, new_end in new_schedule:
+        for ex_date, ex_start, ex_end in student_schedule:
+            if new_date == ex_date and not (new_end <= ex_start or new_start >= ex_end):
+                conn.close()
+                return jsonify({"success": False, "message": "Trùng lịch học với lớp đã đăng ký!"})
+
+    try:
+        cursor.execute("INSERT INTO registrations (class_id, student_id, register_time) VALUES (?, ?, ?)",
+                       (class_id, current_user.id, datetime.datetime.now()))
+        cursor.execute("UPDATE classes SET registered = registered + 1 WHERE id = ?", (class_id,))
+        conn.commit()
+
+        cursor.execute("SELECT registered FROM classes WHERE id = ?", (class_id,))
+        new_count = cursor.fetchone()[0]
+
+        socketio.emit('class_registered', {
+            'class_id': int(class_id),
+            'new_registered': new_count
+        })
+
+        return jsonify({"success": True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "message": str(e)})
+    finally:
+        conn.close()
+
+@app.route('/class-schedule/<int:class_id>')
+@login_required
+def get_schedule(class_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT day_of_week FROM schedules WHERE class_id = ?", (class_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([row[0] for row in rows])
+
+@app.route('/student/my-classes')
+@login_required
+def student_my_classes():
+    if current_user.role != 'student':
+        return "Không có quyền truy cập", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    query = """
+        SELECT cl.id, co.name, u.full_name, r.name, cl.capacity, cl.registered, co.image, s.name
+        FROM registrations reg
+        JOIN classes cl ON reg.class_id = cl.id
+        JOIN courses co ON cl.course_id = co.id
+        JOIN users u ON cl.teacher_id = u.id
+        JOIN rooms r ON cl.room_id = r.id
+        JOIN semesters s ON cl.semester_id = s.id
+        WHERE reg.student_id = ?
+    """
+    cursor.execute(query, (current_user.id,))
+    classes = cursor.fetchall()
     conn.close()
 
-    return render_template('student/courses.html', user=current_user, classes=classes)
+    return render_template('student/my_classes.html', user=current_user, classes=classes)
+
+@app.route('/student/schedule')
+@login_required
+def student_schedule():
+    if current_user.role != 'student':
+        return "Không có quyền truy cập", 403
+    return render_template('student/student_schedule.html', user=current_user)
+
 @app.route('/student')
 def index_student():
     return render_template('student/index.html')
 
+@app.route('/student/schedule/<int:class_id>')
+@login_required
+def view_schedule_by_class(class_id):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT day_of_week, date, start_time, end_time
+        FROM schedules
+        WHERE class_id = ?
+        ORDER BY date
+    """, (class_id,))
+    schedule = cursor.fetchall()
+    conn.close()
+
+    return render_template('student/schedule.html', user=current_user, schedule=schedule)
+@app.route('/api/student-schedules')
+@login_required
+def student_schedule_api():
+    if current_user.role != 'student':
+        return jsonify([])
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Lấy thông tin lịch học của tất cả các lớp mà học sinh đã đăng ký
+    query = """
+        SELECT co.name, r.name, s.date, s.start_time, s.end_time
+        FROM registrations reg
+        JOIN classes cl ON reg.class_id = cl.id
+        JOIN courses co ON cl.course_id = co.id
+        JOIN rooms r ON cl.room_id = r.id
+        JOIN schedules s ON s.class_id = cl.id
+        WHERE reg.student_id = ?
+    """
+    cursor.execute(query, (current_user.id,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Format theo yêu cầu FullCalendar
+    events = []
+    for course_name, room_name, date, start_time, end_time in rows:
+        events.append({
+            "title": f"{course_name} - {room_name}",
+            "start": f"{date}T{start_time}",
+            "end": f"{date}T{end_time}"
+        })
+
+    return jsonify(events)
 
 
 

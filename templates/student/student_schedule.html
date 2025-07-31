@@ -49,11 +49,10 @@
 
       <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="{{ url_for('index_student') }}" >Home<br></a></li>
+            <li><a href="{{ url_for('index_student') }}" class="active">Home<br></a></li>
             <!-- <li><a href="about.html">About</a></li> -->
-            <li><a href="{{ url_for('student_courses') }}" class="active">Courses</a></li>
-            <a href="{{ url_for('student_my_classes') }}">My Class</a>
-
+            <li><a href="{{ url_for('student_courses') }}">Courses</a></li>
+            <a href="{{ url_for('student_my_classes') }}" class="active">My Class</a>
             <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
 
             <!-- <li><a href="trainers.html">Trainers</a></li>
@@ -67,79 +66,19 @@
 
     </div>
   </header>
-
-  <main class="main">
-
-    <!-- Page Title -->
-    <div class="page-title" data-aos="fade">
-      <div class="heading">
-        <div class="container">
-          <div class="row d-flex justify-content-center text-center">
-            <div class="col-lg-8">
-              <h1>Courses</h1>
-              <p class="mb-0">Lựa chọn khóa học của bạn ngay dưới này.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <nav class="breadcrumbs">
-        <div class="container">
-          <ol>
-            <li><a href="index.html">Home</a></li>
-            <li class="current">Courses</li>
-          </ol>
-        </div>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <!-- Courses Section -->
-    <!-- Courses Section -->
-    <section id="courses" class="courses section">
-      <div class="container">
-        <div class="row">
-          {% for cl in classes %}
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mb-4" data-class-id="{{ cl[0] }}"
-              onmouseenter="showSchedule({{ cl[0] }})" onmouseleave="hideSchedule({{ cl[0] }})">
-            <div class="course-item d-flex flex-column">
-              <div class="image-container">
-                <img src="{{ url_for('static', filename=cl[6] and 'images/' + cl[6] or 'assets/img/course/default.png') }}" class="img-fluid" alt="Ảnh khóa học">
-              </div>
-              <div class="course-content d-flex flex-column justify-content-between flex-grow-1">
-                <div class="mb-2">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <p class="category">{{ cl[1] }}</p>
-                    <span class="text-muted">{{ cl[9] }}</span>
-                  </div>
-                  <p class="description">
-                    🏠 Phòng học: {{ cl[3] }}<br>
-                    👥 Sĩ số: <span class="registered-count">{{ cl[5] }}</span> / {{ cl[4] }}
-                  </p>
+    <main class="main">
+        <section class="courses section">
+            <div class="container">
+            <div class="main-content">
+                <h3 class="mb-4">📚 Thời khóa biểu của tôi</h3>
+                <div class="card p-4 shadow-sm">
+                <div id="calendar"></div>
                 </div>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="{{ url_for('static', filename=cl[7] and 'images/' + cl[7] or 'assets/img/person/default.png') }}" class="img-fluid" alt="GV" style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;">
-                    <a href="#" class="trainer-link ms-2">{{ cl[2] }}</a>
-                  </div>
-                  {% if cl[0] in registered_class_ids %}
-                  <button class="btn btn-success mt-2" disabled>✔ Đã đăng ký</button>
-                  {% else %}
-                  <button class="btn btn-primary mt-2 register-btn" data-class-id="{{ cl[0] }}">Đăng ký lớp này</button>
-                  {% endif %}
-                </div>
-                <div class="schedule-popup" id="schedule-{{ cl[0] }}"
-                    style="display:none; position:absolute; background:#fff; padding:10px; border:1px solid #ccc;"></div>
-              </div>
             </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
+            </div>
+        </section>
+    </main>
 
-
-<!-- /Courses Section -->
-
-  </main>
 
     <footer id="footer" class="footer position-relative light-background">
 
@@ -211,46 +150,6 @@
       </div>
 
     </footer>
-    <style>
-      .course-item {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        overflow: hidden;
-      }
-
-      .image-container {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-      }
-
-      .image-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-
-      .course-content {
-        padding: 15px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-
-      .trainer-profile img {
-        width: 35px;
-        height: 35px;
-        object-fit: cover;
-        border-radius: 50%;
-      }
-    </style>
 
 
   <!-- Scroll Top -->
@@ -270,73 +169,36 @@
   <!-- Main JS -->
   <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+
+
+
+<!-- FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
-  const socket = io();
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'timeGridWeek',
+      slotMinTime: '07:00:00',
+      slotMaxTime: '17:00:00',
+      allDaySlot: false,
+      editable: false,
+      selectable: false,
+      hiddenDays: [0],
+      height: 'auto',
 
-  socket.on('class_registered', data => {
-    const item = document.querySelector(`[data-class-id="${data.class_id}"]`);
-    if (item) {
-      const countSpan = item.querySelector('.registered-count');
-      if (countSpan) countSpan.textContent = data.new_registered;
-    }
-  });
+      columnHeaderFormat: (date) => {
+        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        return days[date.getDay()];
+      },
 
-  document.querySelectorAll('.register-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const classId = btn.dataset.classId;
-
-      fetch("/register-class", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `class_id=${classId}`
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          btn.classList.remove("btn-primary");
-          btn.classList.add("btn-success");
-          btn.textContent = "✔ Đã đăng ký";
-          btn.disabled = true;
-        } else {
-          alert(data.message || "Có lỗi xảy ra!");
-        }
-      });
+      events: '/api/student-schedules'
     });
+
+    calendar.render();
   });
-
-  function showSchedule(classId) {
-    const popup = document.getElementById('schedule-' + classId);
-    if (!popup.innerHTML) {
-      fetch(`/class-schedule/${classId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (!data.length) {
-            popup.innerHTML = "<i>Không có lịch học</i>";
-          } else {
-            let html = "<strong>📅 Lịch học:</strong><ul>";
-            data.forEach(day => {
-              html += `<li>${day}</li>`;
-            });
-            html += "</ul>";
-            popup.innerHTML = html;
-          }
-        });
-    }
-    popup.style.display = 'block';
-  }
-
-  function hideSchedule(classId) {
-    const popup = document.getElementById('schedule-' + classId);
-    popup.style.display = 'none';
-  }
 </script>
-
-
-
-
 </body>
 
 </html>

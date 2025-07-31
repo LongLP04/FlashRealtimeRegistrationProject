@@ -53,7 +53,8 @@
           <li><a href="{{ url_for('index_student') }}" class="active">Home<br></a></li>
           <!-- <li><a href="about.html">About</a></li> -->
           <li><a href="{{ url_for('student_courses') }}">Courses</a></li>
-
+          <a href="{{ url_for('student_my_classes') }}">My Class</a> 
+          <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
           <!-- <li><a href="trainers.html">Trainers</a></li>
           <li><a href="events.html">Events</a></li>
           <li><a href="pricing.html">Pricing</a></li> -->
@@ -78,7 +79,7 @@
         <h2 data-aos="fade-up" data-aos-delay="100">Learning Today,<br>Leading Tomorrow</h2>
         <p data-aos="fade-up" data-aos-delay="200">We are team of talented designers making websites with Bootstrap</p>
         <div class="d-flex mt-4" data-aos="fade-up" data-aos-delay="300">
-          <a href="courses.html" class="btn-get-started">Get Started</a>
+        <li><a href="{{url_for('student_courses')}}" class="btn-get-started">Get Started</a></li>
         </div>
       </div>
 
