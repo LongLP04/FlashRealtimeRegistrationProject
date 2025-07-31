@@ -51,8 +51,11 @@
           <ul>
             <li><a href="{{ url_for('index_student') }}" >Home<br></a></li>
             <!-- <li><a href="about.html">About</a></li> -->
+            
             <li><a href="{{ url_for('student_courses') }}">Courses</a></li>
             <a href="{{ url_for('student_my_classes') }}" class="active">My Class</a>
+            
+            <h5>Hi {{ user.full_name }}<br></h5>
             <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
 
             <!-- <li><a href="trainers.html">Trainers</a></li>

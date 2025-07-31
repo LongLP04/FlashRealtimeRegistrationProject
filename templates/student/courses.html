@@ -54,6 +54,7 @@
             <li><a href="{{ url_for('student_courses') }}" class="active">Courses</a></li>
             <a href="{{ url_for('student_my_classes') }}">My Class</a>
 
+            <h5>Hi {{ user.full_name }}<br></h5>
             <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
 
             <!-- <li><a href="trainers.html">Trainers</a></li>
@@ -95,46 +96,50 @@
     <!-- Courses Section -->
     <!-- Courses Section -->
     <section id="courses" class="courses section">
-      <div class="container">
-        <div class="row">
-          {% for cl in classes %}
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mb-4" data-class-id="{{ cl[0] }}"
-              onmouseenter="showSchedule({{ cl[0] }})" onmouseleave="hideSchedule({{ cl[0] }})">
-            <div class="course-item d-flex flex-column">
-              <div class="image-container">
-                <img src="{{ url_for('static', filename=cl[6] and 'images/' + cl[6] or 'assets/img/course/default.png') }}" class="img-fluid" alt="Ảnh khóa học">
-              </div>
-              <div class="course-content d-flex flex-column justify-content-between flex-grow-1">
-                <div class="mb-2">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <p class="category">{{ cl[1] }}</p>
-                    <span class="text-muted">{{ cl[9] }}</span>
-                  </div>
-                  <p class="description">
-                    🏠 Phòng học: {{ cl[3] }}<br>
-                    👥 Sĩ số: <span class="registered-count">{{ cl[5] }}</span> / {{ cl[4] }}
-                  </p>
+    <div class="container">
+      <div class="row">
+        {% for cl in classes %}
+        <div class="col-lg-4 col-md-6 d-flex align-items-stretch mb-4" data-class-id="{{ cl[0] }}"
+            onmouseenter="showSchedule({{ cl[0] }})" onmouseleave="hideSchedule({{ cl[0] }})">
+          <div class="course-item d-flex flex-column">
+            <div class="image-container">
+              <img src="{{ url_for('static', filename=cl[6] and 'images/' + cl[6] or 'assets/img/course/default.png') }}" class="img-fluid" alt="Ảnh khóa học">
+            </div>
+            <div class="course-content d-flex flex-column justify-content-between flex-grow-1">
+              <div class="mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <p class="category">{{ cl[1] }}</p>
+                  <span class="text-muted">{{ cl[9] }}</span>
                 </div>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="{{ url_for('static', filename=cl[7] and 'images/' + cl[7] or 'assets/img/person/default.png') }}" class="img-fluid" alt="GV" style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;">
-                    <a href="#" class="trainer-link ms-2">{{ cl[2] }}</a>
-                  </div>
+                <p class="description">
+                  🏠 Phòng học: {{ cl[3] }}<br>
+                  👥 Sĩ số: <span class="registered-count">{{ cl[5] }}</span> / {{ cl[4] }}
+                </p>
+              </div>
+              <div class="trainer d-flex justify-content-between align-items-center">
+                <div class="trainer-profile d-flex align-items-center">
+                  <img src="{{ url_for('static', filename=cl[7] and 'images/' + cl[7] or 'assets/img/person/default.png') }}" class="img-fluid" alt="GV" style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;">
+                  <a href="#" class="trainer-link ms-2">{{ cl[2] }}</a>
+                </div>
+                <div id="action-btn-{{ cl[0] }}">
                   {% if cl[0] in registered_class_ids %}
-                  <button class="btn btn-success mt-2" disabled>✔ Đã đăng ký</button>
+                    <button class="btn btn-danger mt-2 unregister-btn" data-class-id="{{ cl[0] }}">❌ Huỷ đăng ký</button>
+                  {% elif cl[5] >= cl[4] %}
+                    <button class="btn btn-secondary mt-2" disabled>❌ Hết slot trống</button>
                   {% else %}
-                  <button class="btn btn-primary mt-2 register-btn" data-class-id="{{ cl[0] }}">Đăng ký lớp này</button>
+                    <button class="btn btn-primary mt-2 register-btn" data-class-id="{{ cl[0] }}">Đăng ký lớp này</button>
                   {% endif %}
                 </div>
-                <div class="schedule-popup" id="schedule-{{ cl[0] }}"
-                    style="display:none; position:absolute; background:#fff; padding:10px; border:1px solid #ccc;"></div>
               </div>
+              <div class="schedule-popup" id="schedule-{{ cl[0] }}"
+                  style="display:none; position:absolute; background:#fff; padding:10px; border:1px solid #ccc;"></div>
             </div>
           </div>
-          {% endfor %}
         </div>
+        {% endfor %}
       </div>
-    </section>
+    </div>
+  </section>
 
 
 <!-- /Courses Section -->
@@ -273,38 +278,92 @@
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
   const socket = io();
+  const registeredClassIds = {{ registered_class_ids|tojson }};
+
+  function handleRegister(btn) {
+    const classId = btn.dataset.classId;
+    fetch("/register-class", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `class_id=${classId}`
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        registeredClassIds.push(Number(classId));
+        const html = `<button class='btn btn-danger mt-2 unregister-btn' data-class-id='${classId}'>❌ Huỷ đăng ký</button>`;
+        document.getElementById(`action-btn-${classId}`).innerHTML = html;
+        bindUnregisterEvent(document.querySelector(`#action-btn-${classId} .unregister-btn`));
+      } else {
+        alert(data.message || "Có lỗi xảy ra!");
+      }
+    });
+  }
+
+
+  function handleUnregister(btn) {
+    if (!confirm("Bạn có chắc chắn muốn huỷ đăng ký lớp này?")) return;
+    const classId = btn.dataset.classId;
+    fetch("/unregister-class", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `class_id=${classId}`
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        btn.classList.remove("btn-danger");
+        btn.classList.add("btn-secondary");
+        btn.textContent = "Đã huỷ đăng ký";
+        btn.disabled = true;
+        btn.title = "Phải đợi 5s để đăng ký lại";
+
+        setTimeout(() => {
+          const html = `<button class='btn btn-primary mt-2 register-btn' data-class-id='${classId}'>Đăng ký lớp này</button>`;
+          document.getElementById(`action-btn-${classId}`).innerHTML = html;
+          const newBtn = document.querySelector(`#action-btn-${classId} .register-btn`);
+          bindRegisterEvent(newBtn);
+        }, 5000);
+      } else {
+        alert(data.message || "Có lỗi xảy ra!");
+      }
+    });
+  }
+
+  function bindRegisterEvent(btn) {
+    if (!btn) return;
+    btn.addEventListener('click', () => handleRegister(btn));
+  }
+
+  function bindUnregisterEvent(btn) {
+    if (!btn) return;
+    btn.addEventListener('click', () => handleUnregister(btn));
+  }
+
+  document.querySelectorAll('.register-btn').forEach(bindRegisterEvent);
+  document.querySelectorAll('.unregister-btn').forEach(bindUnregisterEvent);
 
   socket.on('class_registered', data => {
     const item = document.querySelector(`[data-class-id="${data.class_id}"]`);
     if (item) {
       const countSpan = item.querySelector('.registered-count');
       if (countSpan) countSpan.textContent = data.new_registered;
-    }
-  });
 
-  document.querySelectorAll('.register-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const classId = btn.dataset.classId;
+      const container = item.querySelector(`#action-btn-${data.class_id}`);
+      const isUserRegistered = registeredClassIds.includes(Number(data.class_id));
 
-      fetch("/register-class", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `class_id=${classId}`
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          btn.classList.remove("btn-primary");
-          btn.classList.add("btn-success");
-          btn.textContent = "✔ Đã đăng ký";
-          btn.disabled = true;
+      if (container) {
+        if (isUserRegistered) {
+          container.innerHTML = `<button class='btn btn-danger mt-2 unregister-btn' data-class-id='${data.class_id}'>❌ Huỷ đăng ký</button>`;
+          bindUnregisterEvent(container.querySelector('.unregister-btn'));
+        } else if (data.is_full) {
+          container.innerHTML = `<button class='btn btn-secondary mt-2' disabled>❌ Hết slot trống</button>`;
         } else {
-          alert(data.message || "Có lỗi xảy ra!");
+          container.innerHTML = `<button class='btn btn-primary mt-2 register-btn' data-class-id='${data.class_id}'>Đăng ký lớp này</button>`;
+          bindRegisterEvent(container.querySelector('.register-btn'));
         }
-      });
-    });
+      }
+    }
   });
 
   function showSchedule(classId) {
@@ -317,9 +376,7 @@
             popup.innerHTML = "<i>Không có lịch học</i>";
           } else {
             let html = "<strong>📅 Lịch học:</strong><ul>";
-            data.forEach(day => {
-              html += `<li>${day}</li>`;
-            });
+            data.forEach(day => { html += `<li>${day}</li>`; });
             html += "</ul>";
             popup.innerHTML = html;
           }
@@ -333,6 +390,8 @@
     popup.style.display = 'none';
   }
 </script>
+
+
 
 
 

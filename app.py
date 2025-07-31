@@ -1237,39 +1237,56 @@ def register_class():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
+    # 1. Lấy capacity và sĩ số hiện tại
+    cursor.execute("SELECT capacity, registered FROM classes WHERE id = ?", (class_id,))
+    result = cursor.fetchone()
+    if not result:
+        conn.close()
+        return jsonify({"success": False, "message": "Không tìm thấy lớp học"})
+    capacity, registered = result
+    if registered >= capacity:
+        conn.close()
+        return jsonify({"success": False, "message": "Lớp đã đầy, không thể đăng ký!"})
+
+    # 2. Lấy lịch học lớp này
     cursor.execute("SELECT date, start_time, end_time FROM schedules WHERE class_id = ?", (class_id,))
     new_schedule = cursor.fetchall()
 
+    # 3. Lấy danh sách class_id đã đăng ký của học viên
     cursor.execute("SELECT class_id FROM registrations WHERE student_id = ?", (current_user.id,))
     registered_ids = [row[0] for row in cursor.fetchall()]
 
+    student_schedule = []
     if registered_ids:
         placeholders = ','.join('?' for _ in registered_ids)
         cursor.execute(f"""
-            SELECT date, start_time, end_time FROM schedules WHERE class_id IN ({placeholders})
+            SELECT date, start_time, end_time FROM schedules
+            WHERE class_id IN ({placeholders})
         """, registered_ids)
         student_schedule = cursor.fetchall()
-    else:
-        student_schedule = []
 
+    # 4. Check trùng lịch
     for new_date, new_start, new_end in new_schedule:
         for ex_date, ex_start, ex_end in student_schedule:
             if new_date == ex_date and not (new_end <= ex_start or new_start >= ex_end):
                 conn.close()
-                return jsonify({"success": False, "message": "Trùng lịch học với lớp đã đăng ký!"})
+                return jsonify({"success": False, "message": "❌ Trùng lịch học với lớp đã đăng ký!"})
 
     try:
+        # 5. Thêm đăng ký mới
         cursor.execute("INSERT INTO registrations (class_id, student_id, register_time) VALUES (?, ?, ?)",
                        (class_id, current_user.id, datetime.datetime.now()))
         cursor.execute("UPDATE classes SET registered = registered + 1 WHERE id = ?", (class_id,))
         conn.commit()
 
-        cursor.execute("SELECT registered FROM classes WHERE id = ?", (class_id,))
-        new_count = cursor.fetchone()[0]
+        # Truy vấn lại sĩ số và capacity
+        cursor.execute("SELECT registered, capacity FROM classes WHERE id = ?", (class_id,))
+        reg, cap = cursor.fetchone()
 
         socketio.emit('class_registered', {
             'class_id': int(class_id),
-            'new_registered': new_count
+            'new_registered': reg,
+            'is_full': reg >= cap
         })
 
         return jsonify({"success": True})
@@ -1278,6 +1295,41 @@ def register_class():
         return jsonify({"success": False, "message": str(e)})
     finally:
         conn.close()
+
+
+@app.route('/unregister-class', methods=['POST'])
+@login_required
+def unregister_class():
+    if current_user.role != 'student':
+        return jsonify({"success": False, "message": "Chỉ học viên mới được phép huỷ đăng ký!"}), 403
+
+    class_id = request.form.get('class_id')
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM registrations WHERE student_id = ? AND class_id = ?", (current_user.id, class_id))
+        cursor.execute("UPDATE classes SET registered = registered - 1 WHERE id = ? AND registered > 0", (class_id,))
+        conn.commit()
+
+        cursor.execute("SELECT registered, capacity FROM classes WHERE id = ?", (class_id,))
+        reg, cap = cursor.fetchone()
+
+        socketio.emit('class_registered', {
+            'class_id': int(class_id),
+            'new_registered': reg,
+            'is_full': reg >= cap
+        })
+
+        return jsonify({"success": True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "message": str(e)})
+    finally:
+        conn.close()
+
+
 
 @app.route('/class-schedule/<int:class_id>')
 @login_required
