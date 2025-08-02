@@ -4,80 +4,107 @@
   <meta charset="UTF-8">
   <title>Thời khóa biểu</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     body {
-      background: #f8f9fa;
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
+      background: #f1f3f5;
     }
 
-    .main-content {
-      margin-left: 250px;
-      padding: 40px;
-    }
-
-
-    h2 {
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 30px;
-    }
-
-    table th, table td {
-      vertical-align: middle;
-    }
     .sidebar {
-      width: 250px;
+      width: 270px;
       min-height: 100vh;
-      background: #343a40;
+      background: #1e1e2f;
       padding-top: 40px;
       position: fixed;
       left: 0;
       top: 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
 
-    .sidebar a {
-      display: block;
-      padding: 12px 24px;
-      color: #ddd;
-      text-decoration: none;
-      border-left: 4px solid transparent;
-      transition: all 0.2s ease-in-out;
-    }
     .sidebar h4 {
       color: #fff;
       text-align: center;
       margin-bottom: 30px;
-    }
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #495057;
-      border-left: 4px solid #00c6a2;
-      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    .sidebar .icon {
-      margin-right: 8px;
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 16px 26px;
+      color: #d1d1d1;
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      border-left: 5px solid transparent;
+      transition: all 0.35s ease;
+      letter-spacing: 0.3px;
+      position: relative;
+    }
+
+    .sidebar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #4dabf7, #c084fc);
+      transition: width 0.35s ease;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    .sidebar a:hover::before {
+      width: 100%;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      color: #fff;
+      transform: translateX(4px);
+    }
+
+    .sidebar a svg {
+      width: 22px;
+      height: 22px;
+      margin-right: 12px;
+      stroke-width: 2.2;
+      transition: transform 0.3s ease;
+      z-index: 1;
+    }
+
+    .sidebar a:hover svg {
+      transform: scale(1.2);
     }
 
     .logout-link {
-      color: #ffc9cc !important;
+      color: #ffb3b3 !important;
     }
 
     .logout-link:hover {
-      background: #721c24;
-      color: white !important;
+      background-color: #781f28;
+      color: #fff !important;
       border-left-color: #dc3545;
     }
 
     .main-content {
-      margin-left: 250px;
-      padding: 40px;
+      margin-left: 270px;
+      padding: 50px 40px;
     }
 
-    h2 {
-      font-weight: bold;
-      margin-bottom: 32px;
+    .main-content h2 {
+      font-size: 36px;
+      font-weight: 900;
       color: #198754;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      margin-bottom: 32px;
+      letter-spacing: 0.5px;
     }
 
     .table th {
@@ -98,74 +125,72 @@
       text-align: left;
       white-space: pre-wrap;
     }
+
+    #calendar {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-<div class="sidebar">
-  {%if user.role == 'admin' %}
-    <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
-  {% elif user.role == 'teacher' %}
-    <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
-  {% else %}
-    <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
-  {% endif %}
-  <a href="/dashboard">🏠 Trang chính</a>
-
-  {% if user.role == 'admin' %}
-    <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
-    <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
-    <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
-
+  <div class="sidebar">
+    {% if user.role == 'admin' %}
+      <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+    {% elif user.role == 'teacher' %}
+      <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
+    {% else %}
+      <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
+    {% endif %}
+    <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
+    {% if user.role == 'admin' %}
+      <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
+      <a href="{{ url_for('add_class') }}"><i data-lucide="users"></i>Tạo lớp học</a>
+      <a href="{{ url_for('add_room') }}"><i data-lucide="building-2"></i>Thêm phòng học</a>
+      <hr class="text-secondary mx-3">
+    {% endif %}
+    <a href="{{ url_for('view_rooms') }}"><i data-lucide="layout-grid"></i>Xem phòng học</a>
+    <a href="{{ url_for('view_courses') }}"><i data-lucide="book-open"></i>Xem khóa học</a>
+    <a href="{{ url_for('view_classes') }}"><i data-lucide="list-tree"></i>Xem lớp học</a>
+    <a href="{{ url_for('teacher_schedule') }}" class="active"><i data-lucide="calendar"></i>Thời khóa biểu của tôi</a>
+    <a href="{{ url_for('teacher_my_class') }}"><i data-lucide="clipboard-list"></i>Lớp tôi giảng dạy</a>
+    {% if user.role == 'admin' %}
+      <hr class="text-secondary mx-3">
+      <a href="{{ url_for('view_users') }}"><i data-lucide="user-check"></i>Quản lý người dùng</a>
+    {% endif %}
     <hr class="text-secondary mx-3">
-  {% endif %}
+    <a href="{{ url_for('logout') }}" class="logout-link"><i data-lucide="log-out"></i>Đăng xuất</a>
+  </div>
 
-  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}" ><span class="icon">📂</span>Xem lớp học</a>
-  <a href="{{ url_for('teacher_schedule') }}" class="active"><span class="icon">🗓️</span>Thời khóa biểu của tôi</a>
+  <!-- Main content -->
+  <div class="main-content">
+    <h2>📅 Lịch giảng dạy của tôi</h2>
+    <div id="calendar"></div>
+  </div>
 
-  {% if user.role == 'admin' %}
-    <hr class="text-secondary mx-3">
-    <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
-  {% endif %}
-
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
-</div>
-
-<!-- Main content -->
-<div class="main-content">
-  <h3>📅 Lịch giảng dạy của tôi</h3>
-  <div id="calendar"></div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'timeGridWeek',
-      slotMinTime: '07:00:00',
-      slotMaxTime: '17:00:00',
-      allDaySlot: false,
-      selectable: false,
-      editable: false,
-      hiddenDays: [0],
-      height: 'auto',
-
-      columnHeaderFormat: (date) => {
-        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-        return days[date.getDay()];
-      },
-
-      events: '/api/teacher-schedules'
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        slotMinTime: '07:00:00',
+        slotMaxTime: '17:00:00',
+        allDaySlot: false,
+        selectable: false,
+        editable: false,
+        hiddenDays: [0],
+        height: 'auto',
+        columnHeaderFormat: (date) => {
+          const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+          return days[date.getDay()];
+        },
+        events: '/api/teacher-schedules'
+      });
+      calendar.render();
     });
-
-    calendar.render();
-  });
+  </script>
+  <script>
+  lucide.createIcons();
 </script>
-
-
 </body>
 </html>

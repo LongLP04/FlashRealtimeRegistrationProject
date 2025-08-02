@@ -4,46 +4,131 @@
   <meta charset="UTF-8">
   <title>Chỉnh sửa phòng học</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+    }
+
     .sidebar {
-      width: 250px; min-height: 100vh; background: #343a40; padding-top: 40px; position: fixed; left: 0; top: 0;
+      width: 270px;
+      min-height: 100vh;
+      background: #1e1e2f;
+      padding-top: 40px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
-    .sidebar a {
-      display: block; padding: 12px 24px; color: #ddd; text-decoration: none;
-      border-left: 4px solid transparent; transition: all 0.2s ease-in-out;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: #495057; border-left: 4px solid #00c6a2; color: #fff;
-    }
+
     .sidebar h4 {
-      color: #fff; text-align: center; margin-bottom: 30px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 800;
+      font-size: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
-    .main-content { margin-left: 250px; padding: 40px; }
-    h2 { font-weight: bold; color: #007bff; margin-bottom: 30px; }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 16px 26px;
+      color: #d1d1d1;
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      border-left: 5px solid transparent;
+      transition: all 0.35s ease;
+      letter-spacing: 0.3px;
+      position: relative;
+    }
+
+    .sidebar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #4dabf7, #c084fc);
+      transition: width 0.35s ease;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    .sidebar a:hover::before {
+      width: 100%;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      color: #fff;
+      transform: translateX(4px);
+    }
+
+    .sidebar a svg {
+      width: 22px;
+      height: 22px;
+      margin-right: 12px;
+      stroke-width: 2.2;
+      transition: transform 0.3s ease;
+      z-index: 1;
+    }
+
+    .sidebar a:hover svg {
+      transform: scale(1.2);
+    }
+
+    .logout-link {
+      color: #ffb3b3 !important;
+    }
+
+    .logout-link:hover {
+      background-color: #781f28;
+      color: #fff !important;
+      border-left-color: #dc3545;
+    }
+
+    .main-content {
+      margin-left: 270px;
+      padding: 50px 40px;
+    }
+
+    h2 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #212529;
+      margin-bottom: 30px;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 <body>
 
+<!-- Sidebar -->
 <div class="sidebar">
-  <h4>🎓 {{ user.full_name }}<br><small class="text-light">({{ user.role|upper }})</small></h4>
-  <a href="/dashboard">🏠 Trang chính</a>
-  <a href="{{ url_for('add_course') }}">➕ Thêm khóa học</a>
-  <a href="{{ url_for('add_class') }}">➕ Tạo lớp học</a>
-  <a href="{{ url_for('add_room') }}">➕ Thêm phòng học</a>
-  <a href="{{ url_for('add_schedule') }}"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
-  <a href="{{ url_for('add_semester') }}"><span class="icon">🗓️</span>Thêm học kỳ</a>
-
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('view_rooms') }}" class="active">📂 Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}">📂 Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}">📂 Xem lớp học</a>
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('view_users') }}">👥 Quản lý người dùng</a>
-  <hr class="text-secondary mx-3">
-  <a href="{{ url_for('logout') }}" class="logout-link">🚪 Đăng xuất</a>
+  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}"><i data-lucide="users"></i>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}"><i data-lucide="building-2"></i>Thêm phòng học</a>
+  <a href="{{ url_for('add_schedule') }}"><i data-lucide="calendar-clock"></i>Thời khóa biểu</a>
+  <a href="{{ url_for('add_semester') }}"><i data-lucide="calendar-plus"></i>Thêm học kỳ</a>
+  <hr>
+  <a href="{{ url_for('view_rooms') }}" class="active"><i data-lucide="layout-grid"></i>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><i data-lucide="book-open"></i>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><i data-lucide="list-tree"></i>Xem lớp học</a>
+  <hr>
+  <a href="{{ url_for('view_users') }}"><i data-lucide="user-check"></i>Quản lý người dùng</a>
+  <hr>
+  <a href="{{ url_for('logout') }}" class="logout-link"><i data-lucide="log-out"></i>Đăng xuất</a>
 </div>
 
+<!-- Nội dung chính -->
 <div class="main-content">
   <h2>✏️ Chỉnh sửa phòng học</h2>
   <form method="POST">
@@ -65,6 +150,11 @@
     <a href="{{ url_for('view_rooms') }}" class="btn btn-secondary">Hủy</a>
   </form>
 </div>
+
+<!-- Kích hoạt Lucide icons -->
+<script>
+  lucide.createIcons();
+</script>
 
 </body>
 </html>

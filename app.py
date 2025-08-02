@@ -744,6 +744,41 @@ def api_teacher_schedules():
 
     return jsonify(events)
 
+# Xem danh sách student đã đăng ký lớp học của mình
+@app.route('/teacher/my-class')
+@login_required
+def teacher_my_class():
+    if current_user.role != 'teacher':
+        return "Không có quyền truy cập", 403
+
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+
+    # Lấy tất cả lớp mà giảng viên hiện tại phụ trách
+    query = """
+        SELECT c.id AS class_id, co.name AS course_name, r.name AS room_name, c.capacity, c.registered
+        FROM classes c
+        JOIN courses co ON c.course_id = co.id
+        JOIN rooms r ON c.room_id = r.id
+        WHERE c.teacher_id = ?
+    """
+    classes = cursor.execute(query, (current_user.id,)).fetchall()
+
+    # Lấy danh sách sinh viên đã đăng ký theo từng lớp
+    registrations = {}
+    for cls in classes:
+        class_id = cls[0]
+        cursor.execute("""
+            SELECT u.full_name, u.email
+            FROM registrations reg
+            JOIN users u ON reg.student_id = u.id
+            WHERE reg.class_id = ?
+        """, (class_id,))
+        registrations[class_id] = cursor.fetchall()
+
+    conn.close()
+
+    return render_template('teacher/my_class.html', classes=classes, registrations=registrations, user=current_user)
 
 # Lấy lớp để gán lịch, thêm lịch thời khóa biểu
 @app.route('/api/classes')

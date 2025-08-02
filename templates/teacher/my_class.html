@@ -107,10 +107,19 @@
       letter-spacing: 0.5px;
     }
 
-    .main-content p {
-      font-size: 20px;
-      color: #495057;
-      font-weight: 500;
+    .card-header {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .table th {
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .table td {
+      text-align: center;
+      vertical-align: middle;
     }
   </style>
 </head>
@@ -131,26 +140,44 @@
 
 <!-- Nội dung bên phải -->
 <div class="main-content">
-  <h2>👨‍🏫 Trang giảng viên</h2>
-  <p>Chọn một chức năng từ thanh bên trái để xem thông tin giảng dạy của bạn.</p>
+  <h2>📘 Danh sách lớp giảng dạy & sinh viên đăng ký</h2>
+  {% for cls in classes %}
+  <div class="card my-3">
+      <div class="card-header bg-primary text-white">
+          {{ cls[1] }} - {{ cls[2] }} | Sĩ số: {{ cls[4] }}/{{ cls[3] }}
+      </div>
+      <div class="card-body">
+          {% if registrations[cls[0]] %}
+          <table class="table table-bordered">
+              <thead>
+                  <tr>
+                      <th>STT</th>
+                      <th>Họ tên</th>
+                      <th>Email</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for student in registrations[cls[0]] %}
+                      <tr>
+                          <td>{{ loop.index }}</td>
+                          <td>{{ student[0] }}</td>
+                          <td>{{ student[1] }}</td>
+                      </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+          {% else %}
+          <p class="text-muted">Chưa có sinh viên nào đăng ký lớp này.</p>
+          {% endif %}
+      </div>
+  </div>
+  {% endfor %}
 </div>
 
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-<script>
-  const socket = io();
-  const CURRENT_USER_ID = {{ user.id | tojson | safe }};
-
-  socket.on('role_updated', data => {
-    if (data.user_id === CURRENT_USER_ID) {
-      const newRole = data.new_role;
-      if (newRole === 'student') {
-        window.location.href = "/student";
-      }
-    }
-  });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   lucide.createIcons();
 </script>
+
 </body>
 </html>

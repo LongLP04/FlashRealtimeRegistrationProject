@@ -2,68 +2,120 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Danh sách lớp học</title>
+  <title>Danh sách người dùng</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f8f9fa;
+      background: #f1f3f5;
     }
 
     .sidebar {
-      width: 250px;
+      width: 270px;
       min-height: 100vh;
-      background: #343a40;
+      background: #1e1e2f;
       padding-top: 40px;
       position: fixed;
       left: 0;
       top: 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
 
-    .sidebar a {
-      display: block;
-      padding: 12px 24px;
-      color: #ddd;
-      text-decoration: none;
-      border-left: 4px solid transparent;
-      transition: all 0.2s ease-in-out;
-    }
     .sidebar h4 {
       color: #fff;
       text-align: center;
       margin-bottom: 30px;
-    }
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #495057;
-      border-left: 4px solid #00c6a2;
-      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    .sidebar .icon {
-      margin-right: 8px;
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 16px 26px;
+      color: #d1d1d1;
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      border-left: 5px solid transparent;
+      transition: all 0.35s ease;
+      letter-spacing: 0.3px;
+      position: relative;
+    }
+
+    .sidebar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #4dabf7, #c084fc);
+      transition: width 0.35s ease;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    .sidebar a:hover::before {
+      width: 100%;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      color: #fff;
+      transform: translateX(4px);
+    }
+
+    .sidebar a svg {
+      width: 22px;
+      height: 22px;
+      margin-right: 12px;
+      stroke-width: 2.2;
+      transition: transform 0.3s ease;
+      z-index: 1;
+    }
+
+    .sidebar a:hover svg {
+      transform: scale(1.2);
     }
 
     .logout-link {
-      color: #ffc9cc !important;
+      color: #ffb3b3 !important;
     }
 
     .logout-link:hover {
-      background: #721c24;
-      color: white !important;
+      background-color: #781f28;
+      color: #fff !important;
       border-left-color: #dc3545;
     }
 
     .main-content {
-      margin-left: 250px;
-      padding: 40px;
+      margin-left: 270px;
+      padding: 50px 40px;
     }
 
-    h2 {
-      font-weight: bold;
-      margin-bottom: 32px;
-      color: #ff9800;
+    .main-content h2 {
+      font-size: 36px;
+      font-weight: 900;
+      color: #212529;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .main-content p {
+      font-size: 20px;
+      color: #495057;
+      font-weight: 500;
+    }
+
+    hr {
+      border-color: rgba(255, 255, 255, 0.1);
+      margin: 20px 20px;
     }
 
     .table th {
@@ -83,61 +135,53 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    {%if user.role == 'admin' %}
-      <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
-    {% elif user.role == 'teacher' %}
-      <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
-    {% else %}
-      <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
-    {% endif %}
-  <a href="/dashboard">🏠 Trang chính</a>
-  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
-  <a href="{{ url_for('add_class') }}"><span class="icon">➕</span>Tạo lớp học</a>
-  <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
-  <a href="{{ url_for('add_schedule') }}"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
-  <a href="{{ url_for('add_semester') }}"><span class="icon">🗓️</span>Thêm học kỳ</a>
-
-
-  <hr class="text-secondary mx-3">
-
-  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}" ><span class="icon">📂</span>Xem lớp học</a>
-
-  <hr class="text-secondary mx-3">
-
-  <a href="{{ url_for('view_users') }}" class="active"><span class="icon">👥</span>Quản lý người dùng</a>
-  <hr class="text-secondary mx-3">
-  
-
-  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
+  {% if user.role == 'admin' %}
+    <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  {% elif user.role == 'teacher' %}
+    <h4>👨‍🏫 {{ user.full_name }}<br><small class="text-light">(GIẢNG VIÊN)</small></h4>
+  {% else %}
+    <h4>👩‍🎓 {{ user.full_name }}<br><small class="text-light">(Sinh viên)</small></h4>
+  {% endif %}
+  <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}"><i data-lucide="users"></i>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}"><i data-lucide="building-2"></i>Thêm phòng học</a>
+  <a href="{{ url_for('add_schedule') }}"><i data-lucide="calendar-clock"></i>Thời khóa biểu</a>
+  <a href="{{ url_for('add_semester') }}"><i data-lucide="calendar-plus"></i>Thêm học kỳ</a>
+  <hr>
+  <a href="{{ url_for('view_rooms') }}"><i data-lucide="layout-grid"></i>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><i data-lucide="book-open"></i>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><i data-lucide="list-tree"></i>Xem lớp học</a>
+  <hr>
+  <a href="{{ url_for('view_users') }}" class="active"><i data-lucide="user-check"></i>Quản lý người dùng</a>
+  <hr>
+  <a href="{{ url_for('logout') }}" class="logout-link"><i data-lucide="log-out"></i>Đăng xuất</a>
 </div>
 
 <!-- Main content -->
- 
 <div class="main-content">
-    <!-- thongbao -->
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <div>
-        {% for message in messages %}
-        <div class="alert alert-warning alert-dismissible fade show" role="alert" id="flash-message">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
+  <!-- thongbao -->
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div>
+    {% for message in messages %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert" id="flash-message">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <script>
-      // Ẩn thông báo sau 1 giây (1000ms)
-      setTimeout(function() {
-        var flashMessage = document.getElementById("flash-message");
-        if (flashMessage) {
-          flashMessage.style.display = 'none';
-        }
-      }, 1000);
-    </script>
-    {% endif %}
-    {% endwith %}
+    {% endfor %}
+  </div>
+  <script>
+    // Ẩn thông báo sau 1 giây (1000ms)
+    setTimeout(function() {
+      var flashMessage = document.getElementById("flash-message");
+      if (flashMessage) {
+        flashMessage.style.display = 'none';
+      }
+    }, 1000);
+  </script>
+  {% endif %}
+  {% endwith %}
   <h2>📋 Danh sách người dùng</h2>
 
   <div class="table-responsive">
@@ -147,13 +191,12 @@
           <th scope="col">STT</th>
           <th scope="col">Họ và tên</th>
           <th scope="col">Email</th>
-          <th scope="col">Phân quyền</th>    
-            
+          <th scope="col">Phân quyền</th>
         </tr>
       </thead>
       <tbody class="text-center">
         {% for c in users %}
-        <tr>    
+        <tr>
           <td>{{ c[0] }}</td>
           <td>{{ c[1] }}</td>
           <td>{{ c[2] }}</td>
@@ -163,7 +206,6 @@
               <option value="teacher" {% if c[3] == 'teacher' %}selected{% endif %}>Giảng viên</option>
               <option value="admin" {% if c[3] == 'admin' %}selected{% endif %} disabled>Admin</option>
             </select>
-
             {% if c[3] != 'admin' %}
             <button type="button" class="btn btn-primary btn-sm ms-2" onclick="showPasswordPopup({{ c[0] }})">Cập nhật</button>
             <form method="POST" action="{{ url_for('delete_user', user_id=c[0]) }}" class="d-inline">
@@ -175,38 +217,10 @@
         </tr>
         {% endfor %}
       </tbody>
-
     </table>
   </div>
 </div>
 
-<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
-<script>
-  const socket = io();
-
-  socket.on('user_registered', function(data) {
-    const tbody = document.querySelector("table tbody");
-    const newRow = document.createElement("tr");
-
-    newRow.innerHTML = `
-      <td>🆕</td>
-      <td>${data.full_name}</td>
-      <td>${data.email}</td>
-      <td>
-        <form method="POST" action="/update-role/${data.id}">
-          <select name="role">
-            <option value="student" ${data.role == 'student' ? 'selected' : ''}>Học viên</option>
-            <option value="teacher" ${data.role == 'teacher' ? 'selected' : ''}>Giảng viên</option>
-            <option value="admin" ${data.role == 'admin' ? 'selected' : ''} disabled>Admin</option>
-          </select>
-          <button type="submit" class="btn btn-sm btn-primary ms-2">Cập nhật</button>
-        </form>
-      </td>
-    `;
-
-    tbody.appendChild(newRow);
-  });
-</script>
 <!-- Modal xác nhận mật khẩu -->
 <div class="modal fade" id="confirmPasswordModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -228,12 +242,40 @@
     </div>
   </div>
 </div>
+
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  lucide.createIcons();
+  const socket = io();
+
+  socket.on('user_registered', function(data) {
+    const tbody = document.querySelector("table tbody");
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+      <td>🆕</td>
+      <td>${data.full_name}</td>
+      <td>${data.email}</td>
+      <td>
+        <select id="role-${data.id}" class="form-select">
+          <option value="student" ${data.role == 'student' ? 'selected' : ''}>Học viên</option>
+          <option value="teacher" ${data.role == 'teacher' ? 'selected' : ''}>Giảng viên</option>
+          <option value="admin" ${data.role == 'admin' ? 'selected' : ''} disabled>Admin</option>
+        </select>
+        <button type="button" class="btn btn-primary btn-sm ms-2" onclick="showPasswordPopup(${data.id})">Cập nhật</button>
+        <form method="POST" action="/delete-user/${data.id}" class="d-inline">
+          <button type="submit" class="btn btn-sm btn-danger ms-2"
+                  onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">Xóa</button>
+        </form>
+      </td>
+    `;
+
+    tbody.appendChild(newRow);
+  });
+
   function showPasswordPopup(userId) {
     const selectedRole = document.getElementById('role-' + userId).value;
-
     const modal = new bootstrap.Modal(document.getElementById('confirmPasswordModal'));
     const modalForm = document.getElementById('confirmPasswordForm');
 
@@ -244,8 +286,6 @@
     modal.show();
   }
 </script>
-
-
 
 </body>
 </html>

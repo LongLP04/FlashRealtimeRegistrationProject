@@ -4,177 +4,250 @@
   <meta charset="UTF-8">
   <title>Thêm Lớp Học</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f8f9fa;
+      background: #f2f4f7;
     }
 
     .sidebar {
-      width: 250px;
+      width: 270px;
       min-height: 100vh;
-      background: #343a40;
+      background: #1e1e2f;
       padding-top: 40px;
       position: fixed;
       left: 0;
       top: 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     }
 
-    .sidebar a {
-      display: block;
-      padding: 12px 24px;
-      color: #ddd;
-      text-decoration: none;
-      border-left: 4px solid transparent;
-      transition: all 0.2s ease-in-out;
-    }
     .sidebar h4 {
       color: #fff;
       text-align: center;
       margin-bottom: 30px;
-    }
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #495057;
-      border-left: 4px solid #00c6a2;
-      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    .sidebar .icon {
-      margin-right: 8px;
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 16px 26px;
+      color: #d1d1d1;
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      border-left: 5px solid transparent;
+      transition: all 0.35s ease;
+      letter-spacing: 0.3px;
+      position: relative;
+    }
+
+    .sidebar a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #4dabf7, #c084fc);
+      transition: width 0.35s ease;
+      z-index: 0;
+      opacity: 0.15;
+    }
+
+    .sidebar a:hover::before {
+      width: 100%;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      color: #fff;
+      transform: translateX(4px);
+    }
+
+    .sidebar a svg {
+      width: 22px;
+      height: 22px;
+      margin-right: 12px;
+      stroke-width: 2.2;
+      transition: transform 0.3s ease;
+      z-index: 1;
+    }
+
+    .sidebar a:hover svg {
+      transform: scale(1.2);
     }
 
     .logout-link {
-      color: #ffc9cc !important;
+      color: #ffb3b3 !important;
     }
 
     .logout-link:hover {
-      background: #721c24;
-      color: white !important;
+      background-color: #781f28;
+      color: #fff !important;
       border-left-color: #dc3545;
     }
 
     .main-content {
-      margin-left: 250px;
-      padding: 40px;
+      margin-left: 270px;
+      padding: 60px 50px;
     }
 
-    .main-content h2 {
-      font-weight: bold;
-      margin-bottom: 32px;
-      color: #2c3e50;
+    .main-header {
+      font-size: 32px;
+      font-weight: 800;
+      color: #7b61ff;
+      margin-bottom: 40px;
+      border-bottom: 3px solid #e2e6ea;
+      padding-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .main-header svg {
+      width: 30px;
+      height: 30px;
+      stroke-width: 2.5;
+      color: #7b61ff;
     }
 
     .form-label {
       font-weight: 600;
+      color: #333;
     }
 
-    .btn-success {
-      padding: 12px 20px;
+    .form-select,
+    .form-control {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+
+    .btn-primary {
+      padding: 12px 30px;
       font-weight: 600;
       font-size: 16px;
+      background-color: #7b61ff;
+      border: none;
+      border-radius: 12px;
+    }
+
+    .btn-primary:hover {
+      background-color: #5f47d1;
+    }
+
+    .card-form {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
     }
   </style>
 </head>
 <body>
 
-<!-- Sidebar cố định -->
+<!-- Sidebar -->
 <div class="sidebar">
-  
   <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
-  <a href="/dashboard" >🏠 Trang chính</a>
-  <a href="{{ url_for('add_course') }}"><span class="icon">➕</span>Thêm khóa học</a>
-  <a href="{{ url_for('add_class') }}" class="active"><span class="icon">➕</span>Tạo lớp học</a>
-  <a href="{{ url_for('add_room') }}"><span class="icon">➕</span>Thêm phòng học</a>
-  <a href="{{ url_for('add_schedule') }}"><span class="icon">📅</span>Quản lý thời khóa biểu</a>
-  <a href="{{ url_for('add_semester') }}" ><span class="icon">🗓️</span>Thêm học kỳ</a>
-
-  <hr class="text-secondary mx-3">
-
-  <a href="{{ url_for('view_rooms') }}"><span class="icon">📂</span>Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}"><span class="icon">📂</span>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}"><span class="icon">📂</span>Xem lớp học</a>
-
-  <hr class="text-secondary mx-3">
-
-  <a href="{{ url_for('view_users') }}"><span class="icon">👥</span>Quản lý người dùng</a>
-  <hr class="text-secondary mx-3">
-
-  <a href="{{ url_for('logout') }}" class="logout-link"><span class="icon">🚪</span>Đăng xuất</a>
+  <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}" class="active"><i data-lucide="users"></i>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}"><i data-lucide="building-2"></i>Thêm phòng học</a>
+  <a href="{{ url_for('add_schedule') }}"><i data-lucide="calendar-clock"></i>Thời khóa biểu</a>
+  <a href="{{ url_for('add_semester') }}"><i data-lucide="calendar-plus"></i>Thêm học kỳ</a>
+  <hr>
+  <a href="{{ url_for('view_rooms') }}"><i data-lucide="layout-grid"></i>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><i data-lucide="book-open"></i>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><i data-lucide="list-tree"></i>Xem lớp học</a>
+  <hr>
+  <a href="{{ url_for('view_users') }}"><i data-lucide="user-check"></i>Quản lý người dùng</a>
+  <hr>
+  <a href="{{ url_for('logout') }}" class="logout-link"><i data-lucide="log-out"></i>Đăng xuất</a>
 </div>
 
-<!-- Phần nội dung rộng full -->
+<!-- Main Content -->
 <div class="main-content">
-  <h2>🏫 Thêm Lớp Học Mới</h2>
+  <div class="main-header">
+    <i data-lucide="user-plus"></i> Thêm Lớp Học Mới
+  </div>
 
-  <form method="POST">
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="course_id" class="form-label">📚 Chọn khóa học</label>
-        <select class="form-select" name="course_id" required>
-          {% for course in courses %}
-            <option value="{{ course[0] }}">{{ course[1] }}</option>
-          {% endfor %}
-        </select>
+  <div class="card-form">
+    <form method="POST">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <label for="course_id" class="form-label">📘 Chọn khóa học</label>
+          <select class="form-select" name="course_id" required>
+            {% for course in courses %}
+              <option value="{{ course[0] }}">{{ course[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="teacher_id" class="form-label">👩‍🏫 Chọn giảng viên</label>
+          <select class="form-select" name="teacher_id" required>
+            {% for teacher in teachers %}
+              <option value="{{ teacher[0] }}">{{ teacher[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="room_id" class="form-label">🏠 Phòng học</label>
+          <select class="form-select" name="room_id" required>
+            {% for room in rooms %}
+              <option value="{{ room[0] }}">{{ room[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="semester_id" class="form-label">📅 Học kỳ</label>
+          <select class="form-select" name="semester_id" required>
+            {% for semester in semesters %}
+              <option value="{{ semester[0] }}">{{ semester[1] }} ({{ semester[2] }} → {{ semester[3] }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="capacity" class="form-label">👥 Sĩ số tối đa</label>
+          <input type="number" class="form-control" name="capacity" min="1" placeholder="Nhập sĩ số tối đa" required>
+        </div>
       </div>
-      <div class="col-md-6">
-        <label for="teacher_id" class="form-label">👩‍🏫 Chọn giảng viên</label>
-        <select class="form-select" name="teacher_id" required>
-          {% for teacher in teachers %}
-            <option value="{{ teacher[0] }}">{{ teacher[1] }}</option>
-          {% endfor %}
-        </select>
+
+      <div class="text-end mt-4">
+        <button type="submit" class="btn btn-primary">✅ Tạo lớp học</button>
       </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="room_id" class="form-label">🏠 Phòng học</label>
-        <select class="form-select" id="room_id" name="room_id" required>
-          {% for room in rooms %}
-            <option value="{{ room[0] }}">{{ room[1] }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="semester_id" class="form-label">🗓️ Chọn học kỳ</label>
-        <select class="form-select" name="semester_id" required>
-          {% for semester in semesters %}
-            <option value="{{ semester[0] }}">{{ semester[1] }} ({{ semester[2] }} → {{ semester[3] }})</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="capacity" class="form-label">👥 Sĩ số tối đa</label>
-        <input type="number" class="form-control" name="capacity" min="1" placeholder="Nhập sĩ số tối đa" required>
-      </div>
-    </div>
-    <button type="submit" class="btn btn-success mt-3">✅ Tạo lớp học</button>
-  </form>
+    </form>
+  </div>
 </div>
-<!-- Socket.IO -->
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
   const socket = io();
   const CURRENT_USER_ID = {{ user.id | tojson }};
 
   socket.on('class_added', data => {
     if (data.teacher_id !== CURRENT_USER_ID) return;
-
     const html = `
       <tr>
         <td>${data.id}</td>
         <td>${data.course}</td>
-        <td>${data.teacher}</td>0
+        <td>${data.teacher}</td>
         <td>${data.room}</td>
         <td>${data.capacity}</td>
         <td>${data.registered}</td>
-        <td>${data.semester}</td> <!-- 🆕 Cột học kỳ realtime -->
+        <td>${data.semester}</td>
       </tr>
     `;
     document.getElementById('classTableBody').insertAdjacentHTML('beforeend', html);
   });
-</script>
 
+  lucide.createIcons();
+</script>
 
 </body>
 </html>
