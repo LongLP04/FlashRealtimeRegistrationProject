@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f2f4f7;
+      background: #f0f2f5;
     }
 
     .sidebar {
@@ -96,57 +96,102 @@
     .main-content {
       margin-left: 270px;
       padding: 60px 50px;
+      background: #e6e9ef;
+      min-height: 100vh;
     }
 
-    .main-header {
+    .container {
+      max-width: 800px;
+    }
+
+    .form-title {
       font-size: 32px;
       font-weight: 800;
-      color: #7b61ff;
-      margin-bottom: 40px;
-      border-bottom: 3px solid #e2e6ea;
-      padding-bottom: 15px;
+      margin-bottom: 30px;
+      color: #1e3a8a;
       display: flex;
       align-items: center;
       gap: 12px;
-    }
-
-    .main-header svg {
-      width: 30px;
-      height: 30px;
-      stroke-width: 2.5;
-      color: #7b61ff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .form-label {
       font-weight: 600;
-      color: #333;
+      color: #1f2937;
     }
 
-    .form-select,
-    .form-control {
-      padding: 12px;
-      font-size: 16px;
+    .form-label i {
+      margin-right: 6px;
+      color: #3b82f6;
+      vertical-align: middle;
+    }
+
+    .form-control, .form-select {
       border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #d1d5db;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-control::placeholder, .form-select::placeholder {
+      font-style: italic;
+      color: #9ca3af;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #60a5fa;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
     }
 
     .btn-primary {
-      padding: 12px 30px;
+      padding: 14px 28px;
       font-weight: 600;
       font-size: 16px;
-      background-color: #7b61ff;
       border: none;
-      border-radius: 12px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #60a5fa, #a855f7);
+      color: white;
+      transition: background 0.3s ease, transform 0.2s ease;
     }
 
     .btn-primary:hover {
-      background-color: #5f47d1;
+      background: linear-gradient(135deg, #3b82f6, #9333ea);
+      transform: scale(1.03);
     }
 
-    .card-form {
-      background: #ffffff;
-      padding: 40px;
-      border-radius: 18px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    .animate-slide {
+      animation: slideIn 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .animate-fade {
+      animation: fadeIn 0.8s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   </style>
 </head>
@@ -154,7 +199,7 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  <h4>🎓 {{ user.full_name }}<br><small class="text-light">({{ user.role|upper }})</small></h4>
   <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
   <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}" class="active"><i data-lucide="users"></i>Tạo lớp học</a>
@@ -162,7 +207,7 @@
   <a href="{{ url_for('add_schedule') }}"><i data-lucide="calendar-clock"></i>Thời khóa biểu</a>
   <a href="{{ url_for('add_semester') }}"><i data-lucide="calendar-plus"></i>Thêm học kỳ</a>
   <hr>
-  <a href="{{ url_for('view_rooms') }}"><i data-lucide="layout-grid"></i>Xem phòng học</a>
+  <a href}}{{ url_for('view_rooms') }}"><i data-lucide="layout-grid"></i>Xem phòng học</a>
   <a href="{{ url_for('view_courses') }}"><i data-lucide="book-open"></i>Xem khóa học</a>
   <a href="{{ url_for('view_classes') }}"><i data-lucide="list-tree"></i>Xem lớp học</a>
   <hr>
@@ -173,15 +218,13 @@
 
 <!-- Main Content -->
 <div class="main-content">
-  <div class="main-header">
-    <i data-lucide="user-plus"></i> Thêm Lớp Học Mới
-  </div>
+  <div class="container animate-slide">
+    <h2 class="form-title"><i data-lucide="graduation-cap"></i> Thêm Lớp Học Mới</h2>
 
-  <div class="card-form">
-    <form method="POST">
+    <form method="POST" class="p-4 bg-white rounded shadow-sm animate-fade">
       <div class="row g-4">
         <div class="col-md-6">
-          <label for="course_id" class="form-label">📘 Chọn khóa học</label>
+          <label for="course_id" class="form-label"><i data-lucide="book-open-check"></i> Chọn khóa học</label>
           <select class="form-select" name="course_id" required>
             {% for course in courses %}
               <option value="{{ course[0] }}">{{ course[1] }}</option>
@@ -189,7 +232,7 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label for="teacher_id" class="form-label">👩‍🏫 Chọn giảng viên</label>
+          <label for="teacher_id" class="form-label"><i data-lucide="user-cog"></i> Chọn giảng viên</label>
           <select class="form-select" name="teacher_id" required>
             {% for teacher in teachers %}
               <option value="{{ teacher[0] }}">{{ teacher[1] }}</option>
@@ -197,7 +240,7 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label for="room_id" class="form-label">🏠 Phòng học</label>
+          <label for="room_id" class="form-label"><i data-lucide="school"></i> Phòng học</label>
           <select class="form-select" name="room_id" required>
             {% for room in rooms %}
               <option value="{{ room[0] }}">{{ room[1] }}</option>
@@ -205,7 +248,7 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label for="semester_id" class="form-label">📅 Học kỳ</label>
+          <label for="semester_id" class="form-label"><i data-lucide="calendar-check"></i> Học kỳ</label>
           <select class="form-select" name="semester_id" required>
             {% for semester in semesters %}
               <option value="{{ semester[0] }}">{{ semester[1] }} ({{ semester[2] }} → {{ semester[3] }})</option>
@@ -213,13 +256,13 @@
           </select>
         </div>
         <div class="col-md-6">
-          <label for="capacity" class="form-label">👥 Sĩ số tối đa</label>
+          <label for="capacity" class="form-label"><i data-lucide="users-round"></i> Sĩ số tối đa</label>
           <input type="number" class="form-control" name="capacity" min="1" placeholder="Nhập sĩ số tối đa" required>
         </div>
       </div>
 
       <div class="text-end mt-4">
-        <button type="submit" class="btn btn-primary">✅ Tạo lớp học</button>
+        <button type="submit" class="btn btn-primary shadow"><i data-lucide="check-circle"></i> Thêm lớp học</button>
       </div>
     </form>
   </div>

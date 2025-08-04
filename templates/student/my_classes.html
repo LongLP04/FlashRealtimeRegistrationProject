@@ -15,7 +15,8 @@
   <!-- Fonts -->  
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <!-- Vendor CSS Files -->
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -24,8 +25,8 @@
   <link href="{{ url_for('static', filename='assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
 
-<!-- Main CSS File -->
-<link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
+  <!-- Main CSS File -->
+  <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
 
   <!-- =======================================================
   * Template Name: Mentor
@@ -38,37 +39,33 @@
 
 <body class="courses-page">
 
-  <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="container-fluid container-xl position-relative d-flex align-items-center">
-
-      <a href="index.html" class="logo d-flex align-items-center me-auto">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.webp" alt=""> -->
-        <h1 class="sitename">Hệ thống đăng ký khóa học</h1>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('index_student') }}">
+        <i class="fas fa-graduation-cap"></i> Hệ Thống Khóa Học
       </a>
-
-      <nav id="navmenu" class="navmenu">
-          <ul>
-            <li><a href="{{ url_for('index_student') }}" >Home<br></a></li>
-            <!-- <li><a href="about.html">About</a></li> -->
-            
-            <li><a href="{{ url_for('student_courses') }}">Courses</a></li>
-            <a href="{{ url_for('student_my_classes') }}" class="active">My Class</a>
-            
-            <h5>Hi {{ user.full_name }}<br></h5>
-            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
-
-            <!-- <li><a href="trainers.html">Trainers</a></li>
-            <li><a href="events.html">Events</a></li>
-            <li><a href="pricing.html">Pricing</a></li> -->
-          </ul>
-        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-      </nav>
-
-      <!-- <a class="btn-getstarted" href="courses.html">Get Started</a> -->
-
+      <div class="ms-auto">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('index_student') }}"><i class="fas fa-home"></i> Trang chủ</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('student_courses') }}"><i class="fas fa-book"></i> Khóa học</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('student_my_classes') }}"><i class="fas fa-chalkboard-teacher"></i> Lớp học của tôi</a>
+          </li>
+          <li class="nav-item">
+            <span class="nav-link">Xin chào {{ user.full_name }}</span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link logout-link" href="{{ url_for('logout') }}">Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </header>
+  </nav>
 
   <main class="main">
     <section class="courses section">
@@ -79,7 +76,7 @@
             {% for cl in classes %}
             <div class="col-lg-4 col-md-6 d-flex align-items-stretch mb-4">
             <div class="course-item">
-                <img src="{{ url_for('static', filename=cl[6] and 'images/' + cl[6] or 'assets/img/course/default.png') }}" class="img-fluid" alt="Ảnh khóa học">
+                <img src="{{ url_for('static', filename=cl[6] and 'images/' + cl[6] or 'assets/img/course/default.png') }}" class="img-fluid course-image" alt="Ảnh khóa học">
 
                 <div class="course-content">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -107,7 +104,6 @@
         </div>
     </section>
 </main>
-
 
     <footer id="footer" class="footer position-relative light-background">
 
@@ -180,7 +176,6 @@
 
     </footer>
 
-
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
@@ -198,11 +193,115 @@
   <!-- Main JS -->
   <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
 
+  <style>
+    .course-item {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
 
+    .course-image {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
 
+    .course-image:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
 
+    .course-content {
+      padding: 15px;
+      flex-grow: 1;
+    }
 
+    body {
+      font-family: 'Noto Sans', Arial, sans-serif;
+      font-weight: 600;
+      font-size: 1.2rem;
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+      word-spacing: 0.1em;
+      color: #004080;
+      margin: 0;
+      overflow-x: hidden;
+    }
 
+    h1, h2, h3, h4, h5 {
+      font-family: 'Noto Sans', Arial, sans-serif;
+      font-weight: 700;
+      color: #003366;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: #f8f9fa;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #004080 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .navbar-brand i {
+      font-size: 1.5rem;
+      color: #00c6a2;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      color: #004080 !important;
+      margin-left: 1.2rem;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link:hover {
+      color: #0099cc !important;
+    }
+
+    .btn-outline-success {
+      border-radius: 30px;
+      font-weight: 600;
+      padding: 8px 20px;
+      color: #00c6a2;
+      border-color: #00c6a2;
+    }
+
+    .btn-outline-success:hover {
+      background-color: #00c6a2;
+      color: white;
+    }
+
+    .footer {
+      background-color: #003366;
+      padding: 40px 20px;
+    }
+
+    .footer p, .footer a, .footer span, .footer strong, .footer h4 {
+      color: #ffffff;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </body>
 
 </html>

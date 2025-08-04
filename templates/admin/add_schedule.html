@@ -2,15 +2,16 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Thêm thời khóa biểu</title>
+  <title>Thời khóa biểu</title>
+  <link rel="icon" type="image/x-icon" href="/path/to/favicon.ico">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f1f3f5;
+      background: #f8fafc;
     }
 
     .sidebar {
@@ -71,16 +72,17 @@
       transform: translateX(4px);
     }
 
-    .sidebar a svg {
+    .sidebar a i {
       width: 22px;
       height: 22px;
       margin-right: 12px;
-      stroke-width: 2.2;
+      font-size: 18px;
+      text-align: center;
       transition: transform 0.3s ease;
       z-index: 1;
     }
 
-    .sidebar a:hover svg {
+    .sidebar a:hover i {
       transform: scale(1.2);
     }
 
@@ -103,31 +105,226 @@
     .main-content h3 {
       font-size: 32px;
       font-weight: 800;
-      color: #212529;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      color: #374151;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       margin-bottom: 30px;
       letter-spacing: 0.5px;
     }
 
+    /* Calendar Styling Improvements */
     #calendar {
-      background: #fff;
-      border: 1px solid #dee2e6;
-      padding: 20px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Calendar Header */
+    .fc .fc-toolbar {
+      background: #f9fafb;
+      padding: 15px 20px;
       border-radius: 8px;
-    }
-
-    .fc-timegrid-slot-label,
-    .fc-timegrid-slot {
-      height: 60px !important;
-      font-size: 16px;
-    }
-
-    .fc-event-title {
-      font-weight: bold;
+      margin-bottom: 20px;
+      border: 1px solid #e5e7eb;
     }
 
     .fc .fc-toolbar-title {
       font-size: 24px;
+      color: #374151;
+      font-weight: 600;
+    }
+
+    .fc .fc-button-primary {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: white;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .fc .fc-button-primary:hover {
+      background: #4f46e5;
+      border-color: #4f46e5;
+    }
+
+    /* Today button special styling */
+    .fc .fc-today-button {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: white !important;
+      font-weight: 600 !important;
+      text-transform: none !important;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .fc .fc-today-button:hover,
+    .fc .fc-today-button:focus {
+      background: #2563eb !important;
+      border-color: #2563eb !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .fc .fc-today-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .fc .fc-today-button:hover::before {
+      left: 100%;
+    }
+
+    /* Column Headers */
+    .fc .fc-col-header {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .fc .fc-col-header-cell {
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 600;
+      padding: 12px 8px;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .fc-timegrid-slot-label,
+    .fc-timegrid-slot {
+      height: 150px !important; /* Khung lớn cho 2 slot */
+      font-size: 16px;
+      border-color: #e2e8f0;
+    }
+
+    .fc .fc-timegrid-slot-label {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 600;
+      border-right: 2px solid #e2e8f0;
+      padding: 15px 12px;
+      font-size: 18px; /* Chữ to hơn cho dễ đọc */
+    }
+
+    .fc .fc-timegrid-slot {
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0; /* Border đậm hơn cho 2 slot */
+    }
+
+    .fc .fc-timegrid-slot:hover {
+      background: #f8fafc;
+      transition: background-color 0.2s ease;
+    }
+
+    /* Events Styling - Blue Pastel Theme */
+    .fc-event {
+      background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%) !important;
+      border: none !important;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 2px;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .fc-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+      background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%) !important;
+    }
+
+    .fc-event-title {
+      font-weight: 600 !important;
+      color: #1e40af !important;
+      font-size: 13px;
+    }
+
+    .fc-event-time {
+      color: #2563eb !important;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* Grid Lines */
+    .fc .fc-timegrid-divider {
+      border-top: 2px solid #e2e8f0;
+    }
+
+    .fc .fc-timegrid-col {
+      border-right: 1px solid #e2e8f0;
+    }
+
+    /* Selection Styling - Blue theme */
+    .fc .fc-highlight {
+      background: rgba(59, 130, 246, 0.1) !important;
+      border: 2px dashed #3b82f6 !important;
+    }
+
+    /* Modal Improvements */
+    .modal-content {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .modal-header {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-title {
+      color: #374151;
+      font-weight: 600;
+    }
+
+    .form-select {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 8px 12px;
+      background: #ffffff;
+    }
+
+    .form-select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-success {
+      background: #2563eb;
+      border-color: #2563eb;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .btn-success:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    /* Custom scrollbar for better aesthetics */
+    .fc-scroller::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fc-scroller::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    .fc-scroller::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .fc-scroller::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
   </style>
 </head>
@@ -136,25 +333,25 @@
 <!-- Sidebar trái -->
 <div class="sidebar">
   <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
-  <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
-  <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
-  <a href="{{ url_for('add_class') }}"><i data-lucide="users"></i>Tạo lớp học</a>
-  <a href="{{ url_for('add_room') }}"><i data-lucide="building-2"></i>Thêm phòng học</a>
-  <a href="{{ url_for('add_schedule') }}" class="active"><i data-lucide="calendar-clock"></i>Thời khóa biểu</a>
-  <a href="{{ url_for('add_semester') }}"><i data-lucide="calendar-plus"></i>Thêm học kỳ</a>
+  <a href="/dashboard"><i class="fas fa-home"></i>Trang chính</a>
+  <a href="{{ url_for('add_course') }}"><i class="fas fa-book-medical"></i>Thêm khóa học</a>
+  <a href="{{ url_for('add_class') }}"><i class="fas fa-users"></i>Tạo lớp học</a>
+  <a href="{{ url_for('add_room') }}"><i class="fas fa-building"></i>Thêm phòng học</a>
+  <a href="{{ url_for('add_schedule') }}" class="active"><i class="fas fa-calendar-alt"></i>Thời khóa biểu</a>
+  <a href="{{ url_for('add_semester') }}"><i class="fas fa-calendar-plus"></i>Thêm học kỳ</a>
   <hr>
-  <a href="{{ url_for('view_rooms') }}"><i data-lucide="layout-grid"></i>Xem phòng học</a>
-  <a href="{{ url_for('view_courses') }}"><i data-lucide="book-open"></i>Xem khóa học</a>
-  <a href="{{ url_for('view_classes') }}"><i data-lucide="list-tree"></i>Xem lớp học</a>
+  <a href="{{ url_for('view_rooms') }}"><i class="fas fa-th-large"></i>Xem phòng học</a>
+  <a href="{{ url_for('view_courses') }}"><i class="fas fa-book-open"></i>Xem khóa học</a>
+  <a href="{{ url_for('view_classes') }}"><i class="fas fa-list"></i>Xem lớp học</a>
   <hr>
-  <a href="{{ url_for('view_users') }}"><i data-lucide="user-check"></i>Quản lý người dùng</a>
+  <a href="{{ url_for('view_users') }}"><i class="fas fa-user-check"></i>Quản lý người dùng</a>
   <hr>
-  <a href="{{ url_for('logout') }}" class="logout-link"><i data-lucide="log-out"></i>Đăng xuất</a>
+  <a href="{{ url_for('logout') }}" class="logout-link"><i class="fas fa-sign-out-alt"></i>Đăng xuất</a>
 </div>
 
 <!-- Nội dung chính -->
 <div class="main-content">
-  <h3>🗓️ Thêm thời khóa biểu</h3>
+  <h3><i class="fas fa-calendar-week" style="margin-right: 10px; color: #3b82f6;"></i>Thêm thời khóa biểu</h3>
   <div id="calendar"></div>
 
   <!-- Modal thêm lịch -->
@@ -163,20 +360,32 @@
       <form id="scheduleForm">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="scheduleModalLabel">Thêm lịch học</h5>
+            <h5 class="modal-title" id="scheduleModalLabel">
+              <i class="fas fa-plus-circle" style="margin-right: 8px; color: #3b82f6;"></i>
+              Thêm lịch học
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label for="classSelect" class="form-label">Chọn lớp học</label>
+              <label for="classSelect" class="form-label">
+                <i class="fas fa-users" style="margin-right: 6px; color: #64748b;"></i>
+                Chọn lớp học
+              </label>
               <select class="form-select" id="classSelect" multiple required></select>
-              <small class="text-muted">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều lớp</small>
+              <small class="text-muted">
+                <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
+                Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều lớp
+              </small>
             </div>
             <input type="hidden" id="eventStart">
             <input type="hidden" id="eventEnd">
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Thêm</button>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-check" style="margin-right: 6px;"></i>
+              Thêm
+            </button>
           </div>
         </div>
       </form>
@@ -187,20 +396,34 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  lucide.createIcons(); // Kích hoạt icon Lucide
-
   document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'timeGridWeek',
+      locale: 'vi', // Thiết lập tiếng Việt
       slotMinTime: '07:00:00',
       slotMaxTime: '17:00:00',
-      slotDuration: '05:00:00',
+      slotDuration: '05:00:00', // Chỉ 2 slot: 7h-12h và 12h-17h
       allDaySlot: false,
       selectable: true,
       height: 'auto',
       hiddenDays: [0],
-      slotMinHeight: 60,
+      slotMinHeight: 150, // Tăng chiều cao cho 2 slot lớn
+      
+      // Tiếng Việt cho các nút và text
+      buttonText: {
+        today: 'Hôm nay',
+        month: 'Tháng',
+        week: 'Tuần',
+        day: 'Ngày',
+        prev: '<',
+        next: '>'
+      },
+      
+      // Format cho header các cột
+      dayHeaderFormat: { weekday: 'long' },
+      
+      // Custom format cho các ngày trong tuần
       columnHeaderFormat: (date) => {
         const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
         return days[date.getDay()];

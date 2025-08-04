@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Courses - Mentor Bootstrap Template</title>
+  <title>Thời khóa biểu - Hệ thống đăng ký khóa học</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
@@ -13,9 +13,8 @@
   <link href="{{ url_for('static', filename='assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
   <!-- Fonts -->  
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <!-- Vendor CSS Files -->
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -23,136 +22,362 @@
   <link href="{{ url_for('static', filename='assets/vendor/aos/aos.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 
-<!-- Main CSS File -->
-<link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
+  <!-- Main CSS File -->
+  <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
 
-  <!-- =======================================================
-  * Template Name: Mentor
-  * Template URL: https://bootstrapmade.com/mentor-free-education-bootstrap-theme/
-  * Updated: Jul 07 2025 with Bootstrap v5.3.7
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Noto Sans', Arial, sans-serif;
+      font-weight: 600;
+      font-size: 1.2rem;
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+      word-spacing: 0.1em;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: #f8f9fa;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #004080 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .navbar-brand i {
+      font-size: 1.5rem;
+      color: #00c6a2;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      color: #004080 !important;
+      margin-left: 1.2rem;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.5;
+    }
+
+    .nav-link:hover {
+      color: #0099cc !important;
+    }
+
+    .btn-outline-primary, .btn-success {
+      border-radius: 30px;
+      font-weight: 600;
+      padding: 8px 20px;
+    }
+
+    .btn-outline-primary {
+      color: #004080;
+      border-color: #004080;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #004080;
+      color: white;
+    }
+
+    .btn-success {
+      background-color: #00c6a2;
+      border: none;
+    }
+
+    .btn-success:hover {
+      background-color: #009f87;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #003366;
+      color: white;
+      padding: 40px 20px;
+    }
+
+    footer a {
+      font-weight: 600;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    footer h5 {
+      font-weight: 700;
+      margin-bottom: 16px;
+      font-size: 1.5rem;
+      line-height: 1.5;
+    }
+
+    footer .fab {
+      font-size: 1.5rem;
+      margin-right: 12px;
+    }
+
+    /* Calendar Styling Improvements */
+    #calendar {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Calendar Header */
+    .fc .fc-toolbar {
+      background: #f9fafb;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 24px;
+      color: #374151;
+      font-weight: 600;
+    }
+
+    .fc .fc-button-primary {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: white;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .fc .fc-button-primary:hover {
+      background: #4f46e5;
+      border-color: #4f46e5;
+    }
+
+    /* Today button special styling */
+    .fc .fc-today-button {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: white !important;
+      font-weight: 600 !important;
+      text-transform: none !important;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .fc .fc-today-button:hover,
+    .fc .fc-today-button:focus {
+      background: #2563eb !important;
+      border-color: #2563eb !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .fc .fc-today-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .fc .fc-today-button:hover::before {
+      left: 100%;
+    }
+
+    /* Column Headers */
+    .fc .fc-col-header {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .fc .fc-col-header-cell {
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 600;
+      padding: 12px 8px;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .fc-timegrid-slot-label,
+    .fc-timegrid-slot {
+      height: 150px !important;
+      font-size: 16px;
+      border-color: #e2e8f0;
+    }
+
+    .fc .fc-timegrid-slot-label {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 600;
+      border-right: 2px solid #e2e8f0;
+      padding: 15px 12px;
+      font-size: 18px;
+    }
+
+    .fc .fc-timegrid-slot {
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .fc .fc-timegrid-slot:hover {
+      background: #f8fafc;
+      transition: background-color 0.2s ease;
+    }
+
+    /* Events Styling - Blue Pastel Theme */
+    .fc-event {
+      background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%) !important;
+      border: none !important;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin: 2px;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .fc-event:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+      background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%) !important;
+    }
+
+    .fc-event-title {
+      font-weight: 600 !important;
+      color: #1e40af !important;
+      font-size: 13px;
+    }
+
+    .fc-event-time {
+      color: #2563eb !important;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* Grid Lines */
+    .fc .fc-timegrid-divider {
+      border-top: 2px solid #e2e8f0;
+    }
+
+    .fc .fc-timegrid-col {
+      border-right: 1px solid #e2e8f0;
+    }
+
+    /* Selection Styling - Blue theme */
+    .fc .fc-highlight {
+      background: rgba(59, 130, 246, 0.1) !important;
+      border: 2px dashed #3b82f6 !important;
+    }
+
+    /* Custom scrollbar for better aesthetics */
+    .fc-scroller::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fc-scroller::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    .fc-scroller::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .fc-scroller::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
 </head>
 
 <body class="courses-page">
 
-  <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="container-fluid container-xl position-relative d-flex align-items-center">
-
-      <a href="index.html" class="logo d-flex align-items-center me-auto">
-        <!-- Uncomment the line below if you also wish to use an image logo -->
-        <!-- <img src="assets/img/logo.webp" alt=""> -->
-        <h1 class="sitename">Hệ thống đăng ký khóa học</h1>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('index_student') }}">
+        <i class="fas fa-graduation-cap"></i> Hệ Thống Khóa Học
       </a>
-
-      <nav id="navmenu" class="navmenu">
-          <ul>
-            <li><a href="{{ url_for('index_student') }}" class="active">Home<br></a></li>
-            <!-- <li><a href="about.html">About</a></li> -->
-            <li><a href="{{ url_for('student_courses') }}">Courses</a></li>
-            <a href="{{ url_for('student_my_classes') }}" class="active">My Class</a>
-
-            <h5>Hi {{ user.full_name }}<br></h5>
-            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
-
-            <!-- <li><a href="trainers.html">Trainers</a></li>
-            <li><a href="events.html">Events</a></li>
-            <li><a href="pricing.html">Pricing</a></li> -->
-          </ul>
-        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-      </nav>
-
-      <!-- <a class="btn-getstarted" href="courses.html">Get Started</a> -->
-
+      <div class="ms-auto">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('index_student') }}"><i class="fas fa-home"></i> Trang chủ</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('student_courses') }}"><i class="fas fa-book"></i> Khóa học</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('student_my_classes') }}"><i class="fas fa-chalkboard-teacher"></i> Lớp học của tôi</a>
+          </li>
+          <li class="nav-item">
+            <span class="nav-link">Xin chào {{ user.full_name }}</span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link logout-link" href="{{ url_for('logout') }}">Đăng xuất</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </header>
-    <main class="main">
-        <section class="courses section">
-            <div class="container">
-            <div class="main-content">
-                <h3 class="mb-4">📚 Thời khóa biểu của tôi</h3>
-                <div class="card p-4 shadow-sm">
-                <div id="calendar"></div>
-                </div>
-            </div>
-            </div>
-        </section>
-    </main>
+  </nav>
 
-
-    <footer id="footer" class="footer position-relative light-background">
-
-      <div class="container footer-top">
-        <div class="row gy-4">
-          <div class="col-lg-4 col-md-6 footer-about">
-            <a href="index.html" class="logo d-flex align-items-center">
-              <span class="sitename">Hệ thống đăng ký khóa học</span>
-            </a>
-            <div class="footer-contact pt-3">
-              <p>Khu Công nghệ cao TP.HCM</p>
-              <p>Đường D1, P.Long Thạnh Mỹ, Hồ Chí Minh</p>
-              <p class="mt-3"><strong>Phone:</strong> <span>+84 28 5445 4884</span></p>
-              <p><strong>Email:</strong> <span>info@example.com</span></p>
-            </div>
-            <div class="social-links d-flex mt-4">
-              <a href=""><i class="bi bi-twitter-x"></i></a>
-              <a href=""><i class="bi bi-facebook"></i></a>
-              <a href=""><i class="bi bi-instagram"></i></a>
-              <a href=""><i class="bi bi-linkedin"></i></a>
-            </div>
+  <main class="main">
+    <section class="courses section">
+      <div class="container">
+        <div class="main-content">
+          <h3 class="mb-4">📚 Thời khóa biểu của tôi</h3>
+          <div class="card p-4 shadow-sm">
+            <div id="calendar"></div>
           </div>
-
-          <div class="col-lg-2 col-md-3 footer-links">
-            <h4>Useful Links</h4>
-            <ul>
-              <li><a href="#">Home</a></li>
-              <li><a href="#">About us</a></li>
-              <li><a href="#">Services</a></li>
-              <li><a href="#">Terms of service</a></li>
-              <li><a href="#">Privacy policy</a></li>
-            </ul>
-          </div>
-
-          <div class="col-lg-2 col-md-3 footer-links">
-            <h4>Our Services</h4>
-            <ul>
-              <li><a href="#">Web Design</a></li>
-              <li><a href="#">Web Development</a></li>
-              <li><a href="#">Product Management</a></li>
-              <li><a href="#">Marketing</a></li>
-              <li><a href="#">Graphic Design</a></li>
-            </ul>
-          </div>
-
-          <div class="col-lg-4 col-md-12 footer-newsletter">
-            <h4>Our Newsletter</h4>
-            <p>Subscribe to our newsletter and receive the latest news about our products and services!</p>
-            <form action="#" method="post" class="php-email-form">
-              <div class="newsletter-form"><input type="email" name="email"><input type="submit" value="Subscribe"></div>
-              <div class="loading">Loading</div>
-              <div class="error-message"></div>
-              <div class="sent-message">Your subscription request has been sent. Thank you!</div>
-            </form>
-          </div>
-
         </div>
       </div>
+    </section>
+  </main>
 
-      <div class="container copyright text-center mt-4">
-        <p>© <span>Copyright</span> <strong class="px-1 sitename">Mentor</strong> <span>All Rights Reserved</span></p>
-        <div class="credits">
-          <!-- All the links in the footer should remain intact. -->
-          <!-- You can delete the links only if you've purchased the pro version. -->
-          <!-- Licensing information: https://bootstrapmade.com/license/ -->
-          <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
-          Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <h5>Liên hệ</h5>
+          <p>📍 Khu Công nghệ cao TP.HCM, Đường D1, Q.9</p>
+          <p>☎️ 028 5445 2222</p>
+          <p>📧 <a href="mailto:taichinh@hutech.edu.vn">taichinh@hutech.edu.vn</a></p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <h5>Liên kết</h5>
+          <ul class="list-unstyled">
+            <li><a href="#">Trang chủ</a></li>
+            <li><a href="#">Giới thiệu</a></li>
+            <li><a href="#">Chính sách bảo mật</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 mb-3">
+          <h5>Kết nối</h5>
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
         </div>
       </div>
-
-    </footer>
-
+    </div>
+  </footer>
 
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
@@ -163,44 +388,60 @@
   <!-- Vendor JS Files -->
   <script src="{{ url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ url_for('static', filename='assets/vendor/php-email-form/validate.js') }}"></script>
-  <script src="{{ url_for('static', filename='assets/vendor/aos/aos.js') }}"></script>
-  <script src="{{ url_for('static', filename='assets/vendor/glightbox/js/glightbox.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='assets/vendor/purecounter/purecounter_vanilla.js') }}"></script>
-  <script src="{{ url_for('static', filename='assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/vendor/aos/aos.js') }}" async></script>
+  <script src="{{ url_for('static', filename='assets/vendor/glightbox/js/glightbox.min.js') }}" async></script>
+  <script src="{{ url_for('static', filename='assets/vendor/purecounter/purecounter_vanilla.js') }}" async></script>
+  <script src="{{ url_for('static', filename='assets/vendor/swiper/swiper-bundle.min.js') }}" async></script>
 
-  <!-- Main JS -->
-  <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
+  <!-- Main JS File -->
+  <script src="{{ url_for('static', filename='assets/js/main.js') }}" async></script>
 
+  <!-- socket.io CDN -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
+  <!-- FullCalendar -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script>
+    const socket = io();
 
+    // Lấy ID người dùng từ Flask
+    const CURRENT_USER_ID = {{ user.id | tojson | safe }};
 
-
-<!-- FullCalendar -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'timeGridWeek',
-      slotMinTime: '07:00:00',
-      slotMaxTime: '17:00:00',
-      allDaySlot: false,
-      editable: false,
-      selectable: false,
-      hiddenDays: [0],
-      height: 'auto',
-
-      columnHeaderFormat: (date) => {
-        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-        return days[date.getDay()];
-      },
-
-      events: '/api/student-schedules'
+    // Lắng nghe sự kiện cập nhật vai trò
+    socket.on('role_updated', data => {
+      if (data.user_id === CURRENT_USER_ID) {
+        const newRole = data.new_role;
+        if (newRole === 'teacher') {
+          window.location.href = "/teacher";
+        }
+      }
     });
 
-    calendar.render();
-  });
-</script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'vi',
+        initialView: 'timeGridWeek',
+        slotMinTime: '07:00:00',
+        slotMaxTime: '17:00:00',
+        slotDuration: '05:00:00',
+        allDaySlot: false,
+        editable: false,
+        selectable: false,
+        hiddenDays: [0],
+        height: 'auto',
+        buttonText: {
+          today: 'Hôm nay'
+        },
+        columnHeaderFormat: (date) => {
+          const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+          return days[date.getDay()];
+        },
+        events: '/api/student-schedules'
+      });
+      calendar.render();
+    });
+  </script>
 </body>
 
 </html>

@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f1f3f5;
+      background: #f0f4f8;
     }
 
     .sidebar {
@@ -54,7 +54,7 @@
       left: 0;
       height: 100%;
       width: 0;
-      background: linear-gradient(90deg, #4dabf7, #c084fc);
+      background: linear-gradient(90deg, #2dd4bf, #3b82f6);
       transition: width 0.35s ease;
       z-index: 0;
       opacity: 0.15;
@@ -95,46 +95,103 @@
 
     .main-content {
       margin-left: 270px;
-      padding: 50px 40px;
+      padding: 60px 50px;
+      background: #e9eff6;
+      min-height: 100vh;
     }
 
-    .main-content h2 {
+    .container {
+      max-width: 800px;
+    }
+
+    .form-title {
       font-size: 32px;
       font-weight: 800;
-      color: #28a745;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-      margin-bottom: 28px;
+      margin-bottom: 30px;
+      color: #2f4f4f;
       display: flex;
       align-items: center;
-    }
-
-    .main-content h2 svg {
-      margin-right: 10px;
+      gap: 12px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .form-label {
       font-weight: 600;
-      font-size: 17px;
+      color: #374151;
+    }
+
+    .form-label i {
+      margin-right: 6px;
+      color: #10b981;
+      vertical-align: middle;
     }
 
     .form-control, .form-select {
+      border-radius: 10px;
+      padding: 12px 14px;
       font-size: 16px;
-      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .btn-success {
-      padding: 12px 28px;
-      font-weight: 700;
-      font-size: 17px;
+    .form-control::placeholder, .form-select::placeholder {
+      font-style: italic;
+      color: #9ca3af;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #34d399;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-primary {
+      padding: 14px 28px;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      background: linear-gradient(135deg, #2dd4bf, #3b82f6);
+      color: white;
+      transition: background 0.3s ease, transform 0.2s ease;
     }
 
-    hr {
-      border-color: rgba(255, 255, 255, 0.1);
-      margin: 20px 20px;
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #26a69a, #2563eb);
+      transform: scale(1.03);
+    }
+
+    .animate-slide {
+      animation: slideIn 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .animate-fade {
+      animation: fadeIn 0.8s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   </style>
 </head>
@@ -142,7 +199,7 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-  <h4>🎓 {{ user.full_name }}<br><small class="text-light">(ADMIN)</small></h4>
+  <h4>🎓 {{ user.full_name }}<br><small class="text-light">({{ user.role|upper }})</small></h4>
   <a href="/dashboard"><i data-lucide="home"></i>Trang chính</a>
   <a href="{{ url_for('add_course') }}"><i data-lucide="book-plus"></i>Thêm khóa học</a>
   <a href="{{ url_for('add_class') }}"><i data-lucide="users"></i>Tạo lớp học</a>
@@ -159,31 +216,42 @@
   <a href="{{ url_for('logout') }}" class="logout-link"><i data-lucide="log-out"></i>Đăng xuất</a>
 </div>
 
-<!-- Nội dung chính -->
+<!-- Main content -->
 <div class="main-content">
-  <h2><i data-lucide="door-open"></i>Thêm Phòng Học</h2>
-  <form method="POST">
-    <div class="mb-3">
-      <label for="name" class="form-label">Tên phòng</label>
-      <input type="text" class="form-control" id="name" name="name" placeholder="Nhập tên phòng (VD: P101)" required>
-    </div>
+  <div class="container animate-slide">
+    <h2 class="form-title"><i data-lucide="door-open"></i> Thêm Phòng Học Mới</h2>
 
-    <div class="mb-3">
-      <label for="status" class="form-label">Trạng thái phòng</label>
-      <select class="form-select" id="status" name="status" required>
-        <option value="available">Sẵn sàng</option>
-        <option value="occupied">Đang sử dụng</option>
-        <option value="maintenance">Bảo trì</option>
-      </select>
-    </div>
+    <form method="POST" class="p-4 bg-white rounded shadow-sm animate-fade">
+      <div class="mb-4">
+        <label for="name" class="form-label"><i data-lucide="type"></i> Tên phòng</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="Nhập tên phòng (VD: P101)" required>
+      </div>
 
-    <button type="submit" class="btn btn-success">
-      <i data-lucide="save-all"></i> Lưu phòng
-    </button>
-  </form>
+      <div class="mb-4">
+        <label for="status" class="form-label"><i data-lucide="tag"></i> Trạng thái phòng</label>
+        <select class="form-select" id="status" name="status" required>
+          <option value="available">Sẵn sàng</option>
+          <option value="occupied">Đang sử dụng</option>
+          <option value="maintenance">Bảo trì</option>
+        </select>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-primary shadow"><i data-lucide="plus-circle"></i> Thêm phòng học</button>
+      </div>
+    </form>
+  </div>
 </div>
 
+<!-- Socket.IO + Lucide Icon Init -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
+  const socket = io();
+  socket.on("room_added", (data) => {
+    alert("Phòng học mới đã được thêm: " + data.name);
+    console.log("Phòng học mới:", data);
+  });
+
   lucide.createIcons();
 </script>
 </body>
