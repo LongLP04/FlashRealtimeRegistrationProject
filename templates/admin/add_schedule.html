@@ -221,9 +221,9 @@
         const room = info.event.extendedProps.room;
         const start = info.event.extendedProps.start_time;
         const end = info.event.extendedProps.end_time;
-
+        const teacher = info.event.extendedProps.teacher;
         new bootstrap.Tooltip(info.el, {
-          title: `📚 Môn: ${course}\n ${room}\n🕘 ${start} - ${end}`,
+          title: `📚 Môn: ${course}\n ${room} \n 👨‍🏫 ${teacher}\n🕘 ${start} - ${end} `,
           placement: 'top',
           trigger: 'hover',
           container: 'body'
@@ -289,6 +289,10 @@
     }
   });
 </script>
-
+<style>
+  .fc-timegrid-slot {
+    height: 100px !important; /* Bạn có thể tăng thành 100px hoặc hơn nữa nếu muốn */
+  }
+</style>
 </body>
 </html>

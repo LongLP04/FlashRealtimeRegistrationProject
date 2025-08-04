@@ -141,7 +141,7 @@
       <label for="status" class="form-label">Trạng thái:</label>
       <select class="form-select" name="status" id="status" required>
         <option value="available" {% if room[2] == 'available' %}selected{% endif %}>Sẵn sàng</option>
-        <option value="occupied" {% if room[2] == 'occupied' %}selected{% endif %}>Đang sử dụng</option>
+        <!-- <option value="occupied" {% if room[2] == 'occupied' %}selected{% endif %}>Đang sử dụng</option> -->
         <option value="maintenance" {% if room[2] == 'maintenance' %}selected{% endif %}>Bảo trì</option>
       </select>
     </div>

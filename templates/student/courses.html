@@ -278,6 +278,7 @@
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
   const socket = io();
+  const myId = {{ current_user.id }};  // 👈 Đảm bảo dòng này tồn tại
   const registeredClassIds = {{ registered_class_ids|tojson }};
 
   function handleRegister(btn) {
@@ -299,7 +300,6 @@
       }
     });
   }
-
 
   function handleUnregister(btn) {
     if (!confirm("Bạn có chắc chắn muốn huỷ đăng ký lớp này?")) return;
@@ -345,20 +345,29 @@
 
   socket.on('class_registered', data => {
     const item = document.querySelector(`[data-class-id="${data.class_id}"]`);
-    if (item) {
-      const countSpan = item.querySelector('.registered-count');
-      if (countSpan) countSpan.textContent = data.new_registered;
+    if (!item) return;
 
-      const container = item.querySelector(`#action-btn-${data.class_id}`);
-      const isUserRegistered = registeredClassIds.includes(Number(data.class_id));
+    const countSpan = item.querySelector('.registered-count');
+    if (countSpan) countSpan.textContent = data.new_registered;
 
-      if (container) {
-        if (isUserRegistered) {
-          container.innerHTML = `<button class='btn btn-danger mt-2 unregister-btn' data-class-id='${data.class_id}'>❌ Huỷ đăng ký</button>`;
-          bindUnregisterEvent(container.querySelector('.unregister-btn'));
-        } else if (data.is_full) {
-          container.innerHTML = `<button class='btn btn-secondary mt-2' disabled>❌ Hết slot trống</button>`;
-        } else {
+    const container = item.querySelector(`#action-btn-${data.class_id}`);
+    if (!container) return;
+
+    const isSelf = data.student_id === myId;
+
+    if (isSelf) {
+      container.innerHTML = `<button class='btn btn-danger mt-2 unregister-btn' data-class-id='${data.class_id}'>❌ Huỷ đăng ký</button>`;
+      bindUnregisterEvent(container.querySelector('.unregister-btn'));
+      if (!registeredClassIds.includes(Number(data.class_id))) {
+        registeredClassIds.push(Number(data.class_id));
+      }
+    } else {
+      // Đối với người khác
+      if (data.is_full) {
+        container.innerHTML = `<button class='btn btn-secondary mt-2' disabled>❌ Hết slot trống</button>`;
+      } else {
+        // Nếu học sinh khác đã huỷ đăng ký thì show lại nút đăng ký
+        if (!registeredClassIds.includes(Number(data.class_id))) {
           container.innerHTML = `<button class='btn btn-primary mt-2 register-btn' data-class-id='${data.class_id}'>Đăng ký lớp này</button>`;
           bindRegisterEvent(container.querySelector('.register-btn'));
         }
@@ -390,6 +399,7 @@
     popup.style.display = 'none';
   }
 </script>
+
 
 
 

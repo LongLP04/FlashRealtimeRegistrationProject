@@ -111,13 +111,19 @@ def view_rooms():
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     query = """
-        select r.id, r.name, r.status, co.name as course_name, u.full_name as teacher_name
-        from rooms r
-        left join classes c on r.id = c.room_id
-        left join courses co on c.course_id = co.id
-        left join users u on c.teacher_id = u.id
-        group by r.id
+        SELECT 
+            r.id, 
+            r.name, 
+            r.status, 
+            GROUP_CONCAT(DISTINCT co.name) AS course_name, 
+            GROUP_CONCAT(DISTINCT u.full_name) AS teacher_name
+        FROM rooms r
+        LEFT JOIN classes c ON r.id = c.room_id
+        LEFT JOIN courses co ON c.course_id = co.id
+        LEFT JOIN users u ON c.teacher_id = u.id
+        GROUP BY r.id
     """
+
     rooms = cursor.execute(query).fetchall()
     conn.close()
     return render_template('view_rooms.html', rooms=rooms, user =current_user)
@@ -929,7 +935,7 @@ def save_schedule():
                     # 2. Kiểm tra trùng lịch với giáo viên
                     cursor.execute("""
                         SELECT s.id FROM schedules s
-                        JOIN classes c ON s.class_id = c.id
+                        JOIN classes c ON s.class_id = c.id                                  
                         WHERE c.teacher_id = ?
                         AND s.date = ?
                         AND ( (? < s.end_time AND ? > s.start_time) )
@@ -1037,11 +1043,12 @@ def load_schedules():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT s.date, s.start_time, s.end_time, r.name, c.name
+        SELECT s.date, s.start_time, s.end_time, r.name, c.name, u.full_name
         FROM schedules s
         JOIN classes cl ON s.class_id = cl.id
         JOIN rooms r ON cl.room_id = r.id
         JOIN courses c ON cl.course_id = c.id
+        JOIN users u ON cl.teacher_id = u.id
         WHERE s.date BETWEEN ? AND ?
     """, (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')))
 
@@ -1049,16 +1056,19 @@ def load_schedules():
     conn.close()
 
     events = []
-    for date_str, start, end, room, course in rows:
+    for date_str, start, end, room, course, teacher in rows:
         events.append({
             'title': f"{room}: {course}",
             'start': f"{date_str}T{start}:00",
             'end': f"{date_str}T{end}:00",
+
             'extendedProps': {
                 'room': room,
                 'course': course,
+                'teacher' : teacher,
                 'start_time': start,
-                'end_time': end
+                'end_time': end,
+
             }
         })
 
@@ -1321,7 +1331,8 @@ def register_class():
         socketio.emit('class_registered', {
             'class_id': int(class_id),
             'new_registered': reg,
-            'is_full': reg >= cap
+            'is_full': reg >= cap,
+            'student_id': current_user.id 
         })
 
         return jsonify({"success": True})
@@ -1354,7 +1365,8 @@ def unregister_class():
         socketio.emit('class_registered', {
             'class_id': int(class_id),
             'new_registered': reg,
-            'is_full': reg >= cap
+            'is_full': reg >= cap,
+            'student_id': current_user.id
         })
 
         return jsonify({"success": True})
